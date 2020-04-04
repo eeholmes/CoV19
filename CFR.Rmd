@@ -16,7 +16,8 @@ The case fatality rate (CFR) is the fraction of deaths relative to the positive 
 
 Instead while the epidemic is spreading, we want to compare cumulative deaths today against the cumulative cases some days prior. But what lag (days prior) to use? We can get a handle on this by looking at Italy.
 
-https://www.bbc.com/future/article/20200401-coronavirus-why-death-and-mortality-rates-differ
+See this page for another discussion of calculating CFR during an epidemic. This also suggests that lag 7 is the 'right' lag.  But we'll try to estimate the right lag by looking at the lagged CFRs directly.
+https://www.worldometers.info/coronavirus/coronavirus-death-rate/#correct
 
 ```{r}
 datL <- c()

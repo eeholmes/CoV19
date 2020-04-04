@@ -16,6 +16,8 @@ The case fatality rate (CFR) is the fraction of deaths relative to the positive 
 
 Instead while the epidemic is spreading, we want to compare cumulative deaths today against the cumulative cases some days prior. But what lag (days prior) to use? We can get a handle on this by looking at Italy.
 
+https://www.bbc.com/future/article/20200401-coronavirus-why-death-and-mortality-rates-differ
+
 ```{r}
 datL <- c()
 reg <- "Lombardia"
@@ -54,7 +56,7 @@ The CFRs (lag 5 to 7 days) in Europe are ca 15-21% across all the countries with
 
 ```{r}
 dat <- c()
-for(reg in c("Italy","France","Canada", "US","Spain","United Kingdom")){
+for(reg in c("Italy","France","Canada", "US","Spain","United Kingdom","Austria","Germany", "Switzerland", "Greece", "Portugal", "Sweden", "Denmark", "Belgium", "Netherlands")){
 x<-subset(world, region==reg)
 for(lag in 0:10){
   tmp <- data.frame(x=x$death[(1+lag):nrow(x)],

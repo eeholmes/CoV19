@@ -57,7 +57,7 @@ The CFRs (lag 5 to 7 days) in Europe are ca 15-21% across all the countries with
 
 ```{r}
 dat <- c()
-for(reg in c("Italy","France","Canada", "US","Spain","United Kingdom","Austria","Germany", "Switzerland", "Greece", "Portugal", "Sweden", "Denmark", "Belgium", "Netherlands")){
+for(reg in c("Italy","France","Canada", "US","Spain","United Kingdom","Austria","Germany", "Switzerland", "Greece", "Portugal", "Sweden", "Denmark", "Belgium", "Netherlands", "Iran", "China")){
 x<-subset(world, region==reg)
 for(lag in 0:10){
   tmp <- data.frame(x=x$death[(1+lag):nrow(x)],
@@ -105,6 +105,17 @@ plotfun(dat, reg, c(-4,0))
 reg <- "United Kingdom"
 plotfun(dat, reg, c(-4,0))
 ```
+
+```{r}
+reg <- "Germany"
+plotfun(dat, reg, c(-6,-2))
+```
+
+```{r}
+reg <- "Iran"
+plotfun(dat, reg, c(-4,0))
+```
+
 
 ## US CFR
 

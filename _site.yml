@@ -15,12 +15,14 @@ navbar:
       href: state_plots.html
     - text: "Lombardy WA"
       href: walomb_plot.html
-    - text: "NY Plots"
+    - text: "NY"
       href: ny_plot.html
-    - text: "CZ Plots"
+    - text: "CZ"
       href: cz_plot.html
     - text: "CFR"
       href: CFR.html
+    - text: "Forecasts"
+      href: Forecasts.html
 
 output:
   html_document:

@@ -1,0 +1,99 @@
+---
+title: "Forecasts"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+```
+
+These are forecast by fitting a gaussian shape curve the positive cases and estimating deaths from the 7-lag CFR. Plot are only shown if the confidence intervals on the peak can be computed. The 95% confidence intervals on that peak is the grey line at the top. If it is wide, it means there is no information in the data on the location of the peak, aka we have no clue what will happpen. Reasons for this:
+
+* The curve has not started to flatten.
+* The data are bad (too noisy). The WA data is an example.
+
+```{r thefunction}
+myfun <- function(data, reg){
+  f2<-function(x, theta) {
+    m<-theta[1]; s<-theta[2]; a<-theta[3];
+    a*exp(-0.5*((x-m)/s)^2)
+  }
+  f3<-function(x, theta, m) {
+    s<-theta[1]; a<-theta[2];
+    a*exp(-0.5*((x-m)/s)^2)
+  }
+b<-subset(data, region==reg)
+if(max(b$positive)<1000) return()
+b$new.cases <- c(NA, diff(b$positive))
+b$day <- 1:nrow(b)
+cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
+b$y <- b$new.cases/max(b$new.cases, na.rm=TRUE)
+for(m in 20:100){
+  fit<-try(nls(y~f2(day,c(m,s,a)), data=subset(b, positive>100), start=list(m=m, s=10, a=0.6)), silent=TRUE)
+  if(!inherits(fit, "try-error")) break()
+}
+if(inherits(fit, "try-error")) return()
+
+b$fit <-predict(fit, newdata=b)*max(b$new.cases,na.rm=TRUE)
+
+confval <- try(confint(fit, parm="m"), silent=TRUE)
+
+if(inherits(confval, "try-error")) return()
+
+nd <- data.frame(day=1:100, date=b$date[1]+1:100 - 1)
+nd$fit <- predict(fit, newdata=nd)*max(b$new.cases,na.rm=TRUE)
+p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() + 
+  geom_point(data=subset(b, positive>100), col="blue") +
+  geom_line(aes(x=date, y=fit), data=nd)
+
+if(!inherits(confval, "try-error")){
+  if(is.na(confval[2])) confval[2] <- 100
+  cm1 <- "NA"; cm2 <- "NA"
+  fit1<-try(nls(y~f3(day, c(s,a), confval[1]), data=subset(b, positive>100), start=list(s=10, a=0.6)), silent=TRUE)
+  if(!inherits(fit1, "try-error")) cm1 <- round(sum(predict(fit1, newdata=nd)*max(b$new.cases,na.rm=TRUE))*cfr)
+  fit1<-try(nls(y~f3(day, c(s,a), confval[2]), data=subset(b, positive>100), start=list(s=10, a=0.6)), silent=TRUE)
+  if(!inherits(fit1, "try-error")) cm2 <- round(sum(predict(fit1, newdata=nd)*max(b$new.cases,na.rm=TRUE))*cfr)
+  bm <- 1.05*max(b$new.cases, nd$fit, na.rm=TRUE)
+  df <- data.frame(x=b$date[1]+round(confval)-1, y=c(bm,bm))
+  p <- p + geom_line(data=df, aes(x=x, y=y), size=5, color="grey") +
+  ggtitle(paste(reg, "\nPoint estimates: Positives =", round(sum(nd$fit)), 
+                "Deaths =", round(sum(nd$fit)*cfr), "CFR =",
+                round(100*cfr,digits=2),"\n",
+                "Deaths low", cm1, " to Deaths high", cm2))
+
+}else{
+  p <- p +
+  ggtitle(paste(reg, "\nPoint estimates: Positives =", round(sum(nd$fit)), 
+                "Deaths =", round(sum(nd$fit)*cfr), "CFR =",
+                round(100*cfr,digits=2)))
+}
+  
+return(list(p=p, fit=fit))
+}
+```
+
+## A few European Countries
+
+```{r}
+for(i in c("Italy", "France", "Spain", "United Kingdom", "Sweden",
+           "Canada", "Norway", "Belgium", "Netherlands")){
+  p <- myfun(world, i)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## US States
+
+Only states where the location of the peak could be estimated are shown.
+
+```{r}
+for(i in state.abb){
+  p <- myfun(states, i)
+  if(inherits(p, "list")) plot(p$p)
+}
+```

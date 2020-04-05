@@ -12,10 +12,11 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-These are forecast by fitting a log-normal shape curve the positive cases and estimating deaths from the 7-lag CFR. Plot are only shown if the confidence intervals on the peak can be computed. The 95% confidence intervals on that peak is the grey line at the top. If it is wide, it means there is no information in the data on the location of the peak, aka we have no clue what will happpen. Reasons for this:
+These are forecast by fitting a log-normal shape curve the new positive cases and estimating deaths using the 7-lag CFR.  The 95% confidence intervals on the forecasts are shown. 
 
-* The curve has not started to flatten.
-* The data are bad (too noisy). The WA data is an example.
+These are just toy forecasts to try to understand the behavior of statistical forecasts using only a log-normal fit to new cases.  This is similar to the strategy used in the UW model.  
+
+I found that the fits are sensitive to noisy data and I used a 3-day average of new cases to try to deal with this.  In many cases the non-linear fitting function I used (`nls`) was not able to estimate a curve or if it could estimate the curve, it could not estimate the confidence intervals on the parameters. When it did estimate, it seems to like to put the peak at the end of the data. Perhaps that is true or perhaps this approach is biased that way.
 
 ```{r thenormfuncs}
 # estimate mu, sigma and scaling
@@ -28,14 +29,14 @@ These are forecast by fitting a log-normal shape curve the positive cases and es
     s<-theta[1]; a<-theta[2];
     a*exp(-0.5*((x-m)/s)^2)
   }
- ```
+```
 
 ```{r}
 # Get the fit
 getfit <- function(x, posmin=100, maxh=200, xshift=100){
   xshift <- 100
   x$new.cases <- c(NA, diff(x$positive))
-  x$new.cases.smooth <- stats::filter(x$new.cases, c(1/2,1/2))
+  x$new.cases.smooth <- stats::filter(x$new.cases, c(1/3,1/3,1/3))
 day1 <- min(which(x$positive>posmin))
 x$day <- 1:nrow(x) - day1 + 1
 
@@ -99,7 +100,7 @@ b$new.cases <- c(NA, diff(b$positive))
 cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
 
 fit <- getfit(b, posmin=posmin, maxh=maxh, xshift=xshift)
-if(inherits(fit$fit, "try-error") & reg!="UT") return()
+if(inherits(fit$fit, "try-error")) return()
 
 # updated with fitted
 b <- fit$x
@@ -112,10 +113,12 @@ p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
   ggtitle(reg)
 
   npos <- max(b$positive, na.rm=TRUE)+sum(pred$pred, na.rm=TRUE)
-  ndeaths <- max(b$death, na.rm=TRUE)+sum(pred$pred, na.rm=TRUE)*cfr
-  ndeaths.p <- max(b$death, na.rm=TRUE)
+  ndeaths.p <- max(b$death, na.rm=TRUE)+
+    sum(b$new.cases[(nrow(b)-7):nrow(b)])*cfr
+  ndeaths <- ndeaths.p +
+    sum(pred$pred, na.rm=TRUE)*cfr
 
-  if(!inherits(fit$confval, "try-error")){
+  if(!inherits(fit$confval, "try-error") & reg!="UT"){
   bm <- 1.05*max(b$new.cases, pred$pred, na.rm=TRUE)
   #mode of log normal is 
   mode.lims <- sort(round(exp(fit$confval[1,]-fit$confval[2,]^2)))
@@ -128,7 +131,7 @@ p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
                 "CFR =",
                 round(100*cfr,digits=2),"\n",
                 "Deaths low", round(ndeaths.p+fit$cm[1]*cfr), " to Deaths high", round(ndeaths.p+fit$cm[2]*cfr)))
-  fit$pred$y <- pred
+  fit$pred$y <- fit$pred$pred
   p <- p +
     geom_ribbon(data=fit$pred, aes(x=date, y=pred, ymin = pred.low, ymax = pred.high), fill = "pink") +
     geom_line(data=fit$pred, aes(x=date, y=pred.low), linetype="dashed", color="red") +
@@ -151,11 +154,30 @@ return(list(p=p, fit=fit$fit))
 
 ```{r}
 for(i in c("Italy", "France", "Spain", "United Kingdom", "Sweden",
-           "Canada", "Norway", "Belgium", "Netherlands")){
+           "Germany", "Norway", "Belgium", "Netherlands", "Austria", "Czechia", "Poland")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
+
+
+```{r, eval=FALSE}
+for(i in c("Japan", "India", "Pakistan")){
+  p <- myfun(subset(world, date>"2020-03-01"), i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## North America
+
+```{r}
+for(i in c("US", "Mexico", "Canada")){
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+
 
 ## US States
 

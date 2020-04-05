@@ -12,68 +12,138 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-These are forecast by fitting a gaussian shape curve the positive cases and estimating deaths from the 7-lag CFR. Plot are only shown if the confidence intervals on the peak can be computed. The 95% confidence intervals on that peak is the grey line at the top. If it is wide, it means there is no information in the data on the location of the peak, aka we have no clue what will happpen. Reasons for this:
+These are forecast by fitting a log-normal shape curve the positive cases and estimating deaths from the 7-lag CFR. Plot are only shown if the confidence intervals on the peak can be computed. The 95% confidence intervals on that peak is the grey line at the top. If it is wide, it means there is no information in the data on the location of the peak, aka we have no clue what will happpen. Reasons for this:
 
 * The curve has not started to flatten.
 * The data are bad (too noisy). The WA data is an example.
 
-```{r thefunction}
-myfun <- function(data, reg){
+```{r thenormfuncs}
+# estimate mu, sigma and scaling
   f2<-function(x, theta) {
     m<-theta[1]; s<-theta[2]; a<-theta[3];
     a*exp(-0.5*((x-m)/s)^2)
   }
+# fix mu
   f3<-function(x, theta, m) {
     s<-theta[1]; a<-theta[2];
     a*exp(-0.5*((x-m)/s)^2)
   }
-b<-subset(data, region==reg)
-if(max(b$positive)<1000) return()
-b$new.cases <- c(NA, diff(b$positive))
-b$day <- 1:nrow(b)
-cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
-b$y <- b$new.cases/max(b$new.cases, na.rm=TRUE)
-for(m in 20:100){
-  fit<-try(nls(y~f2(day,c(m,s,a)), data=subset(b, positive>100), start=list(m=m, s=10, a=0.6)), silent=TRUE)
+ ```
+
+```{r}
+# Get the fit
+getfit <- function(x, posmin=100, maxh=200, xshift=100){
+  xshift <- 100
+  x$new.cases <- c(NA, diff(x$positive))
+  x$new.cases.smooth <- stats::filter(x$new.cases, c(1/2,1/2))
+day1 <- min(which(x$positive>posmin))
+x$day <- 1:nrow(x) - day1 + 1
+
+subx <- subset(x, positive>posmin)
+subx$day <- subx$day+xshift
+subx$x <- log(subx$day)
+subx$y <- subx$new.cases.smooth*subx$day
+maxy <- max(subx$y, na.rm=TRUE)
+subx$y <- subx$y/maxy
+for(s in c(1,2,seq(0.2,3,0.5))){
+  for(m in seq(20,100,10)+xshift){
+  fit<-try(nls(y~f2(x,c(m,s,a)), data=subx, start=list(m=log(m), s=s, a=max(subx$y, na.rm=TRUE))), silent=TRUE)
+  if(!inherits(fit, "try-error")) break()
+  }
   if(!inherits(fit, "try-error")) break()
 }
-if(inherits(fit, "try-error")) return()
+if(inherits(fit, "try-error")) return(list(x=x, pred=NULL, fit=fit))
+x$fitted <-c(rep(NA, day1-1), predict(fit, newdata=subx)*maxy/subx$day)
 
-b$fit <-predict(fit, newdata=b)*max(b$new.cases,na.rm=TRUE)
+pred <- data.frame(day=((nrow(x)+1):maxh)-day1+1+xshift, date=x$date[1]+nrow(x):(maxh-1))
+pred$x <- log(pred$day)
+pred$pred <- predict(fit, newdata=pred)*maxy/pred$day
 
-confval <- try(confint(fit, parm="m"), silent=TRUE)
-
-if(inherits(confval, "try-error")) return()
-
-nd <- data.frame(day=1:100, date=b$date[1]+1:100 - 1)
-nd$fit <- predict(fit, newdata=nd)*max(b$new.cases,na.rm=TRUE)
-p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() + 
-  geom_point(data=subset(b, positive>100), col="blue") +
-  geom_line(aes(x=date, y=fit), data=nd)
+cm1=NA; cm2=NA
+confval <- try(confint(fit, level=0.75), silent=TRUE)
+if(inherits(confval, "try-error")){ 
+  confval <- try(confint(fit, parm=c("m"), level=0.75), silent=TRUE)
+  if(!inherits(confval, "try-error")){
+    cfs <- coef(fit)
+    fit1<-try(nls(y~f3(x,c(s,a),confval[1]), data=subx, start=list(s=cfs[2], a=cfs[3])), silent=TRUE)
+    fit2<-try(nls(y~f3(x,c(s,a),confval[2]), data=subx, start=list(s=cfs[2], a=cfs[3])), silent=TRUE)
+    if(!inherits(fit1, "try-error") & !inherits(fit2, "try-error")){
+  confval <- rbind(confval, 
+                   s=c(coef(fit1)[1], coef(fit2)[1]),
+                   a=c(coef(fit1)[2], coef(fit2)[2]))
+  }else{ class(confval) <- "try-error" }
+  }
+}
 
 if(!inherits(confval, "try-error")){
-  if(is.na(confval[2])) confval[2] <- 100
-  cm1 <- "NA"; cm2 <- "NA"
-  fit1<-try(nls(y~f3(day, c(s,a), confval[1]), data=subset(b, positive>100), start=list(s=10, a=0.6)), silent=TRUE)
-  if(!inherits(fit1, "try-error")) cm1 <- round(sum(predict(fit1, newdata=nd)*max(b$new.cases,na.rm=TRUE))*cfr)
-  fit1<-try(nls(y~f3(day, c(s,a), confval[2]), data=subset(b, positive>100), start=list(s=10, a=0.6)), silent=TRUE)
-  if(!inherits(fit1, "try-error")) cm2 <- round(sum(predict(fit1, newdata=nd)*max(b$new.cases,na.rm=TRUE))*cfr)
-  bm <- 1.05*max(b$new.cases, nd$fit, na.rm=TRUE)
-  df <- data.frame(x=b$date[1]+round(confval)-1, y=c(bm,bm))
-  p <- p + geom_line(data=df, aes(x=x, y=y), size=5, color="grey") +
-  ggtitle(paste(reg, "\nPoint estimates: Positives =", round(sum(nd$fit)), 
-                "Deaths =", round(sum(nd$fit)*cfr), "CFR =",
+  cm1 <- sum(f2(log(pred$day), confval[,1])*maxy/pred$day)
+  cm2 <- sum(f2(log(pred$day), confval[,2])*maxy/pred$day)
+  pred$pred.low <- f2(log(pred$day), confval[,1])*maxy/pred$day
+  pred$pred.high <- f2(log(pred$day), confval[,2])*maxy/pred$day
+  x$fitted.low <-c(rep(NA, day1-1), f2(subx$x, confval[,1])*maxy/subx$day)
+  x$fitted.high <-c(rep(NA, day1-1), f2(subx$x, confval[,2])*maxy/subx$day)
+
+}
+
+return(list(x=x, pred=pred, fit=fit, confval=confval, cm=sort(c(cm1, cm2))))
+}
+```
+
+```{r thefunction}
+myfun <- function(data, reg, posmin=100, maxh=100, xshift=100){
+b<-subset(data, region==reg)
+if(max(b$positive)<1000) return()
+day1 <- min(which(b$positive>posmin))
+
+b$new.cases <- c(NA, diff(b$positive))
+cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
+
+fit <- getfit(b, posmin=posmin, maxh=maxh, xshift=xshift)
+if(inherits(fit$fit, "try-error") & reg!="UT") return()
+
+# updated with fitted
+b <- fit$x
+pred <- fit$pred
+
+p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() + 
+  geom_point(data=subset(b, positive>posmin), col="blue") +
+  geom_line(aes(x=date, y=fitted), data=b) +
+  geom_line(aes(x=date, y=pred), data=pred, color="red") +
+  ggtitle(reg)
+
+  npos <- max(b$positive, na.rm=TRUE)+sum(pred$pred, na.rm=TRUE)
+  ndeaths <- max(b$death, na.rm=TRUE)+sum(pred$pred, na.rm=TRUE)*cfr
+  ndeaths.p <- max(b$death, na.rm=TRUE)
+
+  if(!inherits(fit$confval, "try-error")){
+  bm <- 1.05*max(b$new.cases, pred$pred, na.rm=TRUE)
+  #mode of log normal is 
+  mode.lims <- sort(round(exp(fit$confval[1,]-fit$confval[2,]^2)))
+  df <- data.frame(x=b$date[1]+day1+mode.lims-xshift-1, y=c(bm,bm))
+  #p <- p + geom_line(data=df, aes(x=x, y=y), size=5, color="grey")
+  p <- p +
+  ggtitle(paste(reg, "\nPoint estimates: Positives =",
+                round(npos),
+                "Deaths =", round(ndeaths), 
+                "CFR =",
                 round(100*cfr,digits=2),"\n",
-                "Deaths low", cm1, " to Deaths high", cm2))
+                "Deaths low", round(ndeaths.p+fit$cm[1]*cfr), " to Deaths high", round(ndeaths.p+fit$cm[2]*cfr)))
+  fit$pred$y <- pred
+  p <- p +
+    geom_ribbon(data=fit$pred, aes(x=date, y=pred, ymin = pred.low, ymax = pred.high), fill = "pink") +
+    geom_line(data=fit$pred, aes(x=date, y=pred.low), linetype="dashed", color="red") +
+    geom_line(data=fit$pred, aes(x=date, y=pred.high), linetype="dashed", color="red") + 
+    geom_line(data=fit$pred, aes(x=date, y=pred), color="red")
+
 
 }else{
   p <- p +
-  ggtitle(paste(reg, "\nPoint estimates: Positives =", round(sum(nd$fit)), 
-                "Deaths =", round(sum(nd$fit)*cfr), "CFR =",
+  ggtitle(paste(reg, "\nPoint estimates: Positives =", round(npos),
+                "Deaths =", round(ndeaths), "CFR =",
                 round(100*cfr,digits=2)))
 }
   
-return(list(p=p, fit=fit))
+return(list(p=p, fit=fit$fit))
 }
 ```
 
@@ -82,7 +152,7 @@ return(list(p=p, fit=fit))
 ```{r}
 for(i in c("Italy", "France", "Spain", "United Kingdom", "Sweden",
            "Canada", "Norway", "Belgium", "Netherlands")){
-  p <- myfun(world, i)
+  p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
@@ -93,7 +163,7 @@ Only states where the location of the peak could be estimated are shown.
 
 ```{r}
 for(i in state.abb){
-  p <- myfun(states, i)
+  p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```

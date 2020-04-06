@@ -91,7 +91,7 @@ return(list(x=x, pred=pred, fit=fit, confval=confval, cm=sort(c(cm1, cm2))))
 ```
 
 ```{r thefunction}
-myfun <- function(data, reg, posmin=100, maxh=100, xshift=100){
+myfun <- function(data, reg, posmin=100, maxh=100, xshift=100, bad.reg=NULL){
 b<-subset(data, region==reg)
 if(max(b$positive)<1000) return()
 day1 <- min(which(b$positive>posmin))
@@ -118,7 +118,7 @@ p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
   ndeaths <- ndeaths.p +
     sum(pred$pred, na.rm=TRUE)*cfr
 
-  if(!inherits(fit$confval, "try-error") & reg!="UT"){
+  if(!inherits(fit$confval, "try-error") & !reg%in%bad.reg){
   bm <- 1.05*max(b$new.cases, pred$pred, na.rm=TRUE)
   #mode of log normal is 
   mode.lims <- sort(round(exp(fit$confval[1,]-fit$confval[2,]^2)))
@@ -185,7 +185,7 @@ Only states where the location of the peak could be estimated are shown.
 
 ```{r}
 for(i in state.abb){
-  p <- myfun(states, i, posmin=100, maxh=150)
+  p <- myfun(states, i, posmin=100, maxh=150, bad.reg=c("UT","TN","PA"))
   if(inherits(p, "list")) plot(p$p)
 }
 ```

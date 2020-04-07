@@ -58,6 +58,8 @@ if(!inherits(fit1, "try-error")) break
 return(fit1)
 }
 
+signx <- function(x) return(ifelse(x<0,-1,1))
+
 getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=100){
   sig <- max(summary(fit.best)$sigma, sig)
   err.best <- residuals(fit.best)
@@ -167,7 +169,7 @@ p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
     sum(pred$pred, na.rm=TRUE)*cfr
 
   if(!inherits(fit$confval, "try-error") & !reg%in%bad.reg){
-  bm <- 1.05*max(b$new.cases, pred$pred, na.rm=TRUE)
+  bm <- 1.05*max(b$new.cases, pred$pred, pred$pred.high, na.rm=TRUE)
   #mode of log normal is 
   mode.lims <- sort(round(exp(fit$confval[1,]-fit$confval[2,]^2)))
   df <- data.frame(x=b$date[1]+day1+mode.lims-xshift-1, y=c(bm,bm))
@@ -192,6 +194,7 @@ p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
     geom_line(data=fit$pred, aes(x=date, y=pred.low), linetype="dashed", color="red") +
     geom_line(data=fit$pred, aes(x=date, y=pred.high), linetype="dashed", color="red") + 
     geom_line(data=fit$pred, aes(x=date, y=pred), color="red")
+  p <- p + annotate("text", x=min(b$date), y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
 
 
 }else{

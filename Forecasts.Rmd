@@ -212,7 +212,7 @@ for(i in c("Austria", "Belgium", "Czechia",
 ```
 
 
-```{r}
+```{r eval=FALSE}
 for(i in c("Japan", "India", "Pakistan")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -221,15 +221,25 @@ for(i in c("Japan", "India", "Pakistan")){
 
 ## North America
 
-For North America, I used the $\sigma$ for Lombardia to produce the estimates. The ranges are very narrow because I fixed $\sigma$.
-
 ```{r}
 for(i in c("US", "Canada")){
-  p <- myfun(world, i, posmin=100, maxh=150, fun="f4", s.fix=s)
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+for(i in c("Mexico")){
+  p <- myfun(world, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
+## South America
+
+```{r}
+for(i in c("Brazil", "Chile")){
+  p <- myfun(world, i, posmin=10, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
 
 
 ## US States
@@ -240,7 +250,9 @@ The ranges here are really narrow because I fixed the $\sigma$ to that in Lombar
 
 ```{r}
 for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "MI", "OH", "IL", "IN", "WA", "CA", "OR", "CO", "LA")){
-  p <- myfun(states, i, posmin=10, maxh=150, fun="f4", s.fix=s)
-  if(inherits(p, "list")) plot(p$p)
+  p1 <- myfun(states, i, posmin=10, maxh=150, fun="f4", s.fix=s)
+  p2 <- myfun(states, i, posmin=10, maxh=150)
+  b<- theme(plot.title = element_text(size = 6))
+  if(inherits(p1, "list") & inherits(p2, "list")) grid.arrange(p1$p+b, p2$p+b, nrow=1)
 }
 ```

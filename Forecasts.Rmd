@@ -209,21 +209,19 @@ for(i in c("Austria", "Belgium", "Czechia",
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
-  p <- myfun(world, "Sweden", posmin=2, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
 ```
 
 
-```{r, eval=FALSE}
-for(i in c("Japan", "India", "Pakistan", "Hubei China")){
-  p <- myfun(subset(world, date>"2020-03-01"), i, posmin=100, maxh=150, fun="f4", s.fix=s)
+```{r}
+for(i in c("Japan", "India", "Pakistan")){
+  p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
 ## North America
 
-For North America, I used the $\sigma$ for Lombardia to produce the estimates.
+For North America, I used the $\sigma$ for Lombardia to produce the estimates. The ranges are very narrow because I fixed $\sigma$.
 
 ```{r}
 for(i in c("US", "Canada")){

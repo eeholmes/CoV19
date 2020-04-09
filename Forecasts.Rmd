@@ -65,17 +65,18 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=100
   err.best <- residuals(fit.best)
   n <- length(err.best)
   val=c()
-aval <- seq(.5,5,.02)
+aval <- seq(.5, 10*coef(fit.best)[3],0.02)
 for(a in aval){
   fit <- fitf1(subx, a=a, m=m, s=s, xshift=xshift)
   err <- residuals(fit)
   rss=sum(err^2, na.rm=TRUE)
   Fval <- (rss-sum(err.best^2, na.rm=TRUE))/sig^2
   tauval <- signx(a-coef(fit.best)[3])*sqrt(Fval)
-  if(tauval>3) break
+  if(tauval>3 & tauval<5) break #catch bad fits with < 5
   val <- rbind(val, c(rss=rss, tau=tauval,
                       coef(fit),a=a))
 }
+val <- val[val[,"tau.a"]> -5 & val[,"tau.a"]< 5,]
 mina <- max(which(val[,"tau.a"]<qt(level/2,n-3)),1)
 maxa <- min(which(val[,"tau.a"]>qt(1-level/2,n-3)),nrow(val))
 return(cbind(val[mina,c("m", "s", "a")], val[maxa,c("m", "s", "a")]))
@@ -114,7 +115,7 @@ pred$pred <- predict(fit, newdata=pred)*maxy/pred$day
 
 cm1=NA; cm2=NA
 confval <- try(confint(fit, level=0.95), silent=TRUE)
-if(inherits(confval, "try-error") | summary(fit)$sigma<0.03) confval <- try(getcis(fit.best=fit, subx=subx, level=0.05, xshift=xshift, sig=sig))
+if(inherits(confval, "try-error") || summary(fit)$sigma<0.03 || any(is.na(confval)) ) confval <- try(getcis(fit.best=fit, subx=subx, level=0.05, xshift=xshift, sig=sig))
 
 if(!inherits(confval, "try-error")){
   if(fun=="f2"){
@@ -232,7 +233,7 @@ for(i in c("Hubei China")){
 ## A few European Countries
 
 ```{r}
-for(i in c("Austria", "Belgium", "Czechia", 
+for(i in c("Austria", "Belgium", "Czechia", "Denmark",
            "France", "Germany", 
            "Ireland", "Italy", 
            "Norway", "Netherlands", 

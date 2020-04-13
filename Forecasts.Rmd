@@ -87,7 +87,6 @@ return(cbind(val[mina,c("m", "s", "a")], val[maxa,c("m", "s", "a")]))
 # Get the fit
 getfit <- function(x, posmin=100, maxh=200, xshift=100, fun="f2", s.fix=0.08, sig=0.05){
   xshift <- 100
-  x$new.cases <- c(NA, diff(x$positive))
   x$new.cases.smooth <- stats::filter(x$new.cases, rep(1/3,3))
 day1 <- min(which(x$positive>posmin))
 x$day <- 1:nrow(x) - day1 + 1
@@ -114,8 +113,12 @@ pred$x <- log(pred$day)
 pred$pred <- predict(fit, newdata=pred)*maxy/pred$day
 
 cm1=NA; cm2=NA
-confval <- try(confint(fit, level=0.95), silent=TRUE)
-if(inherits(confval, "try-error") || summary(fit)$sigma<0.03 || any(is.na(confval)) ) confval <- try(getcis(fit.best=fit, subx=subx, level=0.05, xshift=xshift, sig=sig))
+confval1 <- try(confint(fit, level=0.95), silent=TRUE)
+if(inherits(confval1, "try-error") || summary(fit)$sigma<0.03 || any(is.na(confval1)) ){ 
+  confval <- try(getcis(fit.best=fit, subx=subx, level=0.05, xshift=xshift, sig=sig))
+  if(!inherits(confval1, "try-error") && !inherits(confval, "try-error") && !any(any(is.na(confval1[,1])))) confval[,1] <- confval1[,1]
+  if(!inherits(confval1, "try-error") && !inherits(confval, "try-error") && !any(any(is.na(confval1[,2])))) confval[,2] <- confval1[,2]
+  }else{ confval <- confval1 }
 
 if(!inherits(confval, "try-error")){
   if(fun=="f2"){
@@ -147,6 +150,8 @@ if(max(b$positive)<1000) return()
 day1 <- min(which(b$positive>posmin))
 
 b$new.cases <- c(NA, diff(b$positive))
+if(reg=="MI") b$new.cases[b$new.cases==5269]=600 #hack to fix MI for now
+if(reg=="France") b$new.cases[b$new.cases==25615]=7000 #hack to fix France for now
 cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
 
 fit <- getfit(b, posmin=posmin, maxh=maxh, xshift=xshift,
@@ -169,8 +174,8 @@ p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
   ndeaths <- ndeaths.p +
     sum(pred$pred, na.rm=TRUE)*cfr
 
-  if(!inherits(fit$confval, "try-error") & !reg%in%bad.reg){
-  bm <- 1.05*max(b$new.cases, pred$pred, pred$pred.high, na.rm=TRUE)
+  if(!inherits(fit$confval, "try-error") && !reg%in%bad.reg){
+  bm <- 1.05*max(b$new.cases.smooth, pred$pred, pred$pred.high, na.rm=TRUE)
   #mode of log normal is 
   mode.lims <- sort(round(exp(fit$confval[1,]-fit$confval[2,]^2)))
   df <- data.frame(x=b$date[1]+day1+mode.lims-xshift-1, y=c(bm,bm))
@@ -189,9 +194,9 @@ p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
                 round(ndeaths.p+fit$cm[2]*cfr), "\n",
                 "s = ", round(cfs[2],3), "sig = ", round(summary(fit$fit)$sigma,3), 
                 "sig.ci =", round(max(summary(fit$fit)$sigma, sig),3)))
-  fit$pred$y <- fit$pred$pred
+  fit$pred$new.cases.smooth <- fit$pred$pred
   p <- p +
-    geom_ribbon(data=fit$pred, aes(x=date, y=pred, ymin = pred.low, ymax = pred.high), fill = "pink") +
+    geom_ribbon(data=fit$pred, aes(x=date, ymin = pred.low, ymax = pred.high), fill = "pink") +
     geom_line(data=fit$pred, aes(x=date, y=pred.low), linetype="dashed", color="red") +
     geom_line(data=fit$pred, aes(x=date, y=pred.high), linetype="dashed", color="red") + 
     geom_line(data=fit$pred, aes(x=date, y=pred), color="red")
@@ -285,7 +290,7 @@ Only states with a lockdown are shown. There is no data yet on countries that do
 
 ```{r states-forecast1}
 for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "MI", "WI", "OH", "IL", "IN", "WA", "CA", "OR", "CO")){
-  p <- myfun(states, i, posmin=10, maxh=150)
+  p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
@@ -294,7 +299,7 @@ More states with later lockdowns or none.
 
 ```{r states-forecast2}
 for(i in c("FL", "TN", "MO", "IA", "NH", "TX","OK", "GA", "VA", "WV", "UT", "AL", "MS")){
-  p <- myfun(states, i, posmin=10, maxh=150)
+  p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
@@ -303,7 +308,7 @@ Louisiana looks weird.
 
 ```{r LAforecast}
 for(i in c("LA")){
-  p <- myfun(states, i, posmin=10, maxh=150)
+  p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```

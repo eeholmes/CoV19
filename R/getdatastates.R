@@ -33,18 +33,12 @@ getdatastates <- function(json=TRUE){
       states <- statedata[,c("date", "region", "positive", "negative", "hospitalized", "death", "total.tests")]
       
       # Fix WA numbers
-      # Dates are off
-      states$date[states$region=="WA"] <- states$date[states$region=="WA"]-2
-      cols <- c("positive", "negative", "hospitalized", "death", "total.tests")
-      for(i in c("2020-03-05", "2020-03-04", "2020-03-03"))
-        states[states$region=="WA" & states$date==as.Date(i), cols] <- states[states$region=="WA" & (states$date==(as.Date(i)-1)), cols]
-      states[states$region=="WA" & states$date==as.Date("2020-03-02"), cols] <- c(28, NA, NA, 9, NA)
-      states[states$region=="WA" & states$date==as.Date("2020-03-29"), cols] <- c(5062, NA, NA, NA, NA)
-      states[states$region=="WA" & states$date==as.Date("2020-03-30"), cols] <- c(5515, NA, NA, NA, NA)
-      states[states$region=="WA" & states$date==as.Date("2020-03-31"), cols] <- c(5984, NA, NA, 247, NA)
+      # remove WA data
+      states <- states[states$region!="WA",]
+      # add good WA data
+      states <- rbind(states, getdatawa())
 
       states <- states[order(states$region, states$date),]
-      
       
       save(states, file="data/states.RData")
       cat("Success! Data downloaded.\n")

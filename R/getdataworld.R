@@ -64,7 +64,7 @@ getdataworld <- function(){
     # Create merged set for states
     for(reg in paste(state.name, "US")){
       x <- world %>% 
-        subset(str_detect(region, reg) & !(region==reg)) %>%
+        subset(stringr::str_detect(region, reg) & !(region==reg)) %>%
         dplyr::group_by(date) %>%
         dplyr::summarize_if(is.numeric, function(x){ifelse(all(is.na(x)), NA, sum(x, na.rm=TRUE))})
       # This will not have the region column, so we add that back on

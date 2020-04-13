@@ -44,7 +44,7 @@ These are just experiments to understand the nature of these kind of fits.  Don'
   }
 ```
 
-```{r}
+```{r fitf1}
 
 fitf1<- function(subx, m=20, a=1, s=0.08, xshift=100){
 f1<-function(x, theta, a) {
@@ -72,7 +72,7 @@ for(a in aval){
   rss=sum(err^2, na.rm=TRUE)
   Fval <- (rss-sum(err.best^2, na.rm=TRUE))/sig^2
   tauval <- signx(a-coef(fit.best)[3])*sqrt(Fval)
-  if(tauval>3 & tauval<5) break #catch bad fits with < 5
+  if(!is.na(tauval) && tauval>3 && tauval<5) break #catch bad fits with < 5
   val <- rbind(val, c(rss=rss, tau=tauval,
                       coef(fit),a=a))
 }
@@ -83,7 +83,7 @@ return(cbind(val[mina,c("m", "s", "a")], val[maxa,c("m", "s", "a")]))
 }
 ```
 
-```{r}
+```{r getfit}
 # Get the fit
 getfit <- function(x, posmin=100, maxh=200, xshift=100, fun="f2", s.fix=0.08, sig=0.05){
   xshift <- 100
@@ -140,7 +140,7 @@ return(list(x=x, subx=subx, pred=pred, fit=fit, confval=confval, cm=sort(c(cm1, 
 }
 ```
 
-```{r thefunction}
+```{r myfun}
 myfun <- function(data, reg, posmin=100, maxh=100, xshift=100, bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05){
 b<-subset(data, region==reg)
 if(max(b$positive)<1000) return()
@@ -215,7 +215,7 @@ return(list(p=p, fit=fit$fit, confint=fit$confval))
 
 Lombardia is my case study area and I will use the $\sigma$ for this region as the $\sigma$ parameter for the curves in other areas.
 
-```{r}
+```{r Lomb-forecast}
 p <- myfun(italy, "Lombardia")
 if(inherits(p, "list")) plot(p$p)
 s <- coef(p$fit)[2]
@@ -223,7 +223,7 @@ s <- coef(p$fit)[2]
 
 ## Hubei China
 
-```{r}
+```{r China-forecast}
 for(i in c("Hubei China")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -232,7 +232,7 @@ for(i in c("Hubei China")){
 
 ## A few European Countries
 
-```{r}
+```{r  Europe-forecast}
 for(i in c("Austria", "Belgium", "Czechia", "Denmark",
            "France", "Germany", 
            "Ireland", "Italy", 
@@ -246,7 +246,7 @@ for(i in c("Austria", "Belgium", "Czechia", "Denmark",
 ```
 
 
-```{r}
+```{r  Asia-forecast1}
 for(i in c("Japan", "India", "Pakistan")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -255,11 +255,13 @@ for(i in c("Japan", "India", "Pakistan")){
 
 ## North America
 
-```{r}
+```{r NAmer-forecast1}
 for(i in c("US", "Canada")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
+```
+```{r Mex-forecast}
 for(i in c("Mexico")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -268,9 +270,9 @@ for(i in c("Mexico")){
 
 ## South America
 
-```{r}
+```{r SAmer-forecast}
 for(i in c("Brazil", "Chile")){
-  p <- myfun(world, i, posmin=10, maxh=150)
+  p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
@@ -281,7 +283,7 @@ for(i in c("Brazil", "Chile")){
 Only states with a lockdown are shown. There is no data yet on countries that do not try to stop the spread with a lockdown. The residual variance (difference between the line and data) is estimated from the fit with a minimum value of 0.05 (take from the average residual variance during the upswing part of an epidemic).
 
 
-```{r}
+```{r states-forecast1}
 for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "MI", "WI", "OH", "IL", "IN", "WA", "CA", "OR", "CO")){
   p <- myfun(states, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -290,7 +292,7 @@ for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "MI", "WI", "OH", "IL", "IN
 
 More states with later lockdowns or none.
 
-```{r}
+```{r states-forecast2}
 for(i in c("FL", "TN", "MO", "IA", "NH", "TX","OK", "GA", "VA", "WV", "UT", "AL", "MS")){
   p <- myfun(states, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -299,7 +301,7 @@ for(i in c("FL", "TN", "MO", "IA", "NH", "TX","OK", "GA", "VA", "WV", "UT", "AL"
 
 Louisiana looks weird.
 
-```{r}
+```{r LAforecast}
 for(i in c("LA")){
   p <- myfun(states, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)

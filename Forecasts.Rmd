@@ -285,29 +285,82 @@ for(i in c("Brazil", "Chile")){
 
 ## US States
 
-Only states with a lockdown are shown. There is no data yet on countries that do not try to stop the spread with a lockdown. The residual variance (difference between the line and data) is estimated from the fit with a minimum value of 0.05 (take from the average residual variance during the upswing part of an epidemic).
+### Northeast
 
-
-```{r states-forecast1}
-for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "MI", "WI", "OH", "IL", "IN", "WA", "CA", "OR", "CO")){
+```{r states-forecast-northeast}
+for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "ME", "NH", "DC")){
   p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
-More states with later lockdowns or none.
+### Southeast
 
-```{r states-forecast2}
-for(i in c("FL", "TN", "MO", "IA", "NH", "TX","OK", "GA", "VA", "WV", "UT", "AL", "MS")){
+```{r states-forecast-southeast}
+for(i in c("FL", "VA", "SC", "NC", "GA")){
   p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
-Louisiana looks weird.
+### South
 
-```{r LAforecast}
-for(i in c("LA")){
+```{r states-forecast-south}
+for(i in c("TN", "KY", "AL", "MS", "AR", "LA")){
+  p <- myfun(states, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+### Midwest
+
+```{r states-forecast-midwest}
+for(i in c("OH", "MI", "IN", "IL")){
+  p <- myfun(states, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+### Center North
+
+```{r states-forecast-cn}
+for(i in c("WI", "MN", "SD", "ND", "IA")){
+  p <- myfun(states, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+### West coast
+
+```{r states-forecast-westcoast}
+for(i in c("WA", "CA", "OR")){
+  p <- myfun(states, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+### South central
+
+```{r states-forecast-southcentral}
+for(i in c("TX", "OK", "KS")){
+  p <- myfun(states, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+### Four corners
+
+```{r states-forecast-fourcorners}
+for(i in c("CO", "AZ", "UT", "NM", "NV")){
+  p <- myfun(states, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+### Rockies
+
+```{r states-forecast-rockies}
+for(i in c("ID", "MT", "WY")){
   p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }

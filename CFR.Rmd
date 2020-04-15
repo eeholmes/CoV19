@@ -86,6 +86,8 @@ p
 }
 ```
 
+In Italy, the flat line is 3-day lag, which would suggest that people were not coming in to get tested until they were very sick and close to dying.
+
 ```{r}
 reg <- "Italy"
 plotfun(dat, reg, c(-4,0))
@@ -106,10 +108,14 @@ reg <- "United Kingdom"
 plotfun(dat, reg, c(-4,0))
 ```
 
+Germany is a big exception. We can see a clear effect of early testing, well before people are very sick (and close to dying).
+
 ```{r}
 reg <- "Germany"
 plotfun(dat, reg, c(-6,-2))
 ```
+
+Iran is odd. Lines should not go down like that unless a) early death rate was much higher or b) they started under-reporting deaths at some point.
 
 ```{r}
 reg <- "Iran"
@@ -119,11 +125,11 @@ plotfun(dat, reg, c(-4,0))
 
 ## US CFR
 
-The flattening lags for the US is about the same, 5 to 7 days prior. But look at the lagged CFR (lag 5 to 7). It is much lower than in Europe.
+The flattening lags for the US is about the same, 5 to 7 days prior. But look at the lagged CFR (lag 5 to 7). It is much lower than in Europe.  Lag is 5-7 days, suggesting that people are a) getting tested when they are less sick, b) they live longer once hospitalized, or c) there is a longer lag in reporting deaths than in Europe.
 
 ```{r}
 reg <- "US"
-plotfun(dat, reg, c(-5,-1), lags=0:10)
+plotfun(dat, reg, c(-5,-1))
 ```
 
 
@@ -132,9 +138,9 @@ The US numbers are the sum across very diverse states, each of which is handling
 
 ```{r}
 datS <- c()
-for(reg in c("NY","NJ","WA","CA","LA")){
+for(reg in c("NY","NJ","WA","CA","LA","MI")){
 x<-subset(states, region==reg)
-for(lag in 0:10){
+for(lag in 0:15){
   tmp <- data.frame(x=x$death[(1+lag):nrow(x)],
                     val= x$death[(1+lag):nrow(x)]/x$positive[1:(nrow(x)-lag)],
                     lag=lag, region=reg)
@@ -152,10 +158,17 @@ This low CFR is very odd. It is hard to imagine that the US is doing more testin
 
 ```{r}
 reg <- "NY"
-plotfun(datS, reg, c(-5,-1), lags=0:10)
+plotfun(datS, reg, c(-5,-1), lags=c(0,3,5,7,10,15))
 ```
 
-The exception to this is Louisiana which has much higher death rate.
+Michigan is weird. No idea why the lag would be so long (2 weeks).
+
+```{r}
+reg <- "MI"
+plotfun(datS, reg, c(-5,-1), lags=c(0,3,5,7,10,15))
+```
+
+Louisiana is weird. It reminds me of Iran with higher death rate early and then declining.
 
 ```{r}
 reg <- "LA"

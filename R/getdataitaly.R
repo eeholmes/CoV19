@@ -28,7 +28,7 @@ getdataitaly <- function(){
     italydata <- italydata[,c("date", "region", "positive","hospitalized",
                               "death", "recovered", "ICU")]
     italy <- italydata
-    cat("Success! Data downloaded.\n")
+    cat("Success! Italy data downloaded.\n")
     save(italy, file="data/italy.RData")
     invisible(italy)
 }

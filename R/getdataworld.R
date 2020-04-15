@@ -72,7 +72,7 @@ getdataworld <- function(){
       world <- rbind(world, x)
     }
     
-    cat("Success! Data downloaded.\n")
+    cat("Success! World data downloaded.\n")
     save(world, file="data/world.RData")
     invisible(world)
 }

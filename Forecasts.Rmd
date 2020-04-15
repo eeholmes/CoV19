@@ -251,7 +251,7 @@ for(i in c("Austria", "Belgium", "Czechia", "Denmark",
 ```
 
 
-```{r  Asia-forecast1}
+```{r  Asia-forecast1, eval=FALSE}
 for(i in c("Japan", "India", "Pakistan")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)

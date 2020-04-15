@@ -4,6 +4,7 @@ export(
   getdataworld,
   getdataitaly,
   getdata,
+  getdatawa,
   plot1,
   plot2,
   plot3,

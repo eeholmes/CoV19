@@ -28,13 +28,14 @@ xx <- aa %>%
 xx <- xx[order(xx$Day),]
 xx$cumdeath <- cumsum(xx$Deaths)
 
-b <- data.frame(date=as.Date(min(x$Day):max(x$Day)), 
+b <- data.frame(date=seq(min(x$Day), max(x$Day), by="day"), 
                 region="WA", positive=NA, negative=NA, hospitalized=NA,
                 death=NA, total.tests=NA)
 for(i in b$date){
   if(any(x$Day==i)) b$positive[b$date==i] <- x$cumpos[x$Day==i]
   if(any(xx$Day==i)) b$death[b$date==i] <- xx$cumdeath[xx$Day==i]
 }
+b$death[is.na(b$death)] <- 0
 return(b)
 }
   

@@ -41,7 +41,7 @@ getdatastates <- function(json=TRUE){
       states <- states[order(states$region, states$date),]
       
       save(states, file="data/states.RData")
-      cat("Success! Data downloaded.\n")
+      cat("Success! States data downloaded.\n")
       invisible(states)
     }else{
       cat("Server error. Data could not be downloaded.\n")

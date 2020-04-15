@@ -41,7 +41,7 @@ So that suggests that the CFR in Lombardia is about 20% (the level of the lag 5 
 ```{r}
 reg <- "Lombardia"
 p <- ggplot(subset(datL, region==reg & lag%in%c(0,3,5,7,10)), aes(x=x,y=log.val,color=lag)) + geom_line() + geom_point() +
-  xlim(c(100,5000)) + ggtitle(reg) +
+  ggtitle(reg) +
   xlab("Cumulative Deaths") +
   scale_y_continuous(name="lagged CFR", breaks=-4:0, 
                      labels=round(exp(-4:0),digits=2), limits=c(-4,0))
@@ -78,7 +78,7 @@ val1 <- 100*round(mean(val1[(length(val1)-3):length(val1)]),digits=3)
 val2 <- subset(dat, region==reg & lag==7)$val
 val2 <- 100*round(mean(val2[(length(val2)-3):length(val2)]),digits=3)
 p <- ggplot(subset(dat, region==reg & lag%in%lags), aes(x=x,y=log.val,color=lag)) + geom_line() + geom_point() +
-  xlim(xlims) + ggtitle(paste0(reg," ",val1," to ", val2,"%")) +
+  ggtitle(paste0(reg," ",val1," to ", val2,"%")) +
   xlab("Cumulative Deaths") +
   scale_y_continuous(name="lagged CFR", breaks=ylims[1]:ylims[2], 
                      labels=round(exp(ylims[1]:ylims[2]),digits=2), limits=ylims)
@@ -159,5 +159,5 @@ The exception to this is Louisiana which has much higher death rate.
 
 ```{r}
 reg <- "LA"
-plotfun(datS, reg, c(-4,0), xlims=c(100,500))
+plotfun(datS, reg, c(-4,0), xlims=c(100,1000))
 ```

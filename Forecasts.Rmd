@@ -47,7 +47,8 @@ f1<-function(x, theta, a) {
 
 ```{r fitf1}
 
-fitf1<- function(subx, m=20, a=1, s=0.08, xshift=0){
+fitf1<- function(subx, m=5, a=1, s=0.08, xshift=0){
+  # m is actual m not log(day)
   f1<-function(x, theta, a) {
     m<-theta[1]; s<-theta[2];
     ifelse(s<0,-1,1)*a*exp(-0.5*((x-m)/s)^2)
@@ -57,8 +58,8 @@ fitf1<- function(subx, m=20, a=1, s=0.08, xshift=0){
     x <- x-m
     ifelse(s<0,-1,1)*a*exp(-0.5*(x/s)^2)
   }
-  for(m in 10:100){
-    fit1<-try(nls(y~f1(x,c(m,s),a), data=subx, start=list(m=log(m+xshift), s=s), control = list(maxiter = 500), algorithm="port", lower=c(0,0.03)), silent=TRUE)
+  for(m in c(m, seq(.5,2,.1)*m)){
+    fit1<-try(nls(y~f1(x,c(m,s),a), data=subx, start=list(m=m, s=s), control = list(maxiter = 500), algorithm="port", lower=c(0,0.03)), silent=TRUE)
     if(!inherits(fit1, "try-error")) break
   }
   return(fit1)
@@ -67,6 +68,8 @@ fitf1<- function(subx, m=20, a=1, s=0.08, xshift=0){
 signx <- function(x) return(ifelse(x<0,-1,1))
 
 getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
+  m <- coef(fit.best)[1]
+  s <- coef(fit.best)[2]
   sig <- max(summary(fit.best)$sigma, sig)
   err.best <- residuals(fit.best)
   n <- length(err.best)
@@ -78,7 +81,8 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
     rss=sum(err^2, na.rm=TRUE)
     Fval <- (rss-sum(err.best^2, na.rm=TRUE))/sig^2
     tauval <- signx(a-coef(fit.best)[3])*sqrt(Fval)
-    if(!is.na(tauval) && tauval>3 && tauval<5) next #catch bad fits with < 5
+    if(!is.na(tauval) && tauval>3 && tauval<5) break #catch bad fits with < 5
+    if(is.na(tauval)) next
     val <- rbind(val, c(rss=rss, tau=tauval,
                         coef(fit),a=a))
   }
@@ -102,8 +106,8 @@ getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=
   subx$y <- subx$new.cases.smooth*subx$day
   maxy <- max(subx$y, na.rm=TRUE)
   subx$y <- subx$y/maxy
-  for(s in c(.1,1,seq(0.2,3,0.5))){
-    for(m in seq(20,100,10)+xshift){
+  for(s in c(0.05,.1,1,seq(0.2,3,0.5))){
+    for(m in seq(10,200,10)+xshift){
       if(fun=="f2") fit<-try(nls(y~f2(x,c(m,s,a)), data=subx, start=list(m=log(m), s=s, a=max(subx$y, na.rm=TRUE)), control = list(maxiter = 500)), silent=TRUE)
       if(fun=="f4") fit<-try(nls(y~f4(x,c(m,a), s.fix), data=subx, start=list(m=log(m), a=max(subx$y, na.rm=TRUE)), control = list(maxiter = 500)), silent=TRUE)
       if(!inherits(fit, "try-error")) break()

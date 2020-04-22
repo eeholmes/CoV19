@@ -339,7 +339,7 @@ for(i in c("Albania", "Romania", "Bulgaria",
 
 ## Former USSR
 
-```{r  Balkans-forecast}
+```{r  Russia}
 for(i in c("Russia", "Ukraine", "Belarus")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)

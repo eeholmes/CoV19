@@ -15,13 +15,13 @@ my_plot(italy, "Lombardia", "2020-03-10")
 ```
 
 ```{r wa_plot, message=FALSE, warning=FALSE}
-x <- subset(states, region=="WA")
+x <- subset(world, region=="Washington US")
 # tmp <- x[1,]
 # tmp$date <- as.Date("2020-04-04")
 # tmp[1,!colnames(tmp) %in% c("date", "region")] <- NA
 # tmp$positive <- 7984; tmp$death <- 308
 # x <- rbind(x, tmp)
-reg <- "WA"
+reg <- "Washington US"
 p <- my_plot(x, reg)
 p <- add_vline(p, "restaurants close", "2020-03-16")
 p <- add_vline(p, "12 days past restaurants closed", "2020-03-28", linetype="dashed")

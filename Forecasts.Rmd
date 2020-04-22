@@ -16,7 +16,9 @@ These are forecast by fitting a log-normal shape curve the new positive cases an
 
 These are just toy forecasts to try to understand the behavior of statistical forecasts using only a log-normal fit to new cases.  This is somewhat similar to the strategy used in the [UW model](https://covid19.healthdata.org/) except they fit to deaths and I am fitting to a 3-day average of reported positives.
 
-These are just experiments to understand the nature of these kind of fits.  Don't put any stock whatsoever into these 'forecasts'. One thing I've noticed is that, the fitting algorithm seems to like to put the peak at the end of the data. Perhaps that is true or perhaps this approach is biased that way. I am fitting a lognormal curve and that is a very specific curve shape. That curve may be imposing too much 'information' when there is no real information in the data about the location of the peak.
+These are just experiments to understand the nature of these kind of fits.  Don't put any stock whatsoever into these 'forecasts'. If the new cases are still going up exponentially, then the model has no information about where the peak might be and the model cannot fit. In that case, I show the new cases only.
+
+If the model fits, then the blue dots are the smoothed (3-day average) new cases to which the model was fit.
 
 ```{r thenormfuncs}
 # estimate mu, sigma and scaling
@@ -74,7 +76,7 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
   err.best <- residuals(fit.best)
   n <- length(err.best)
   val=c()
-  aval <- seq(.5, 10*coef(fit.best)[3],0.02)
+  aval <- seq(.5, 10*coef(fit.best)[3],0.1)
   for(a in aval){
     fit <- fitf1(subx, a=a, m=m, s=s, xshift=xshift)
     err <- residuals(fit)
@@ -89,6 +91,9 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
   val <- val[val[,"tau.a"]> -5 & val[,"tau.a"]< 5,]
   mina <- max(which(val[,"tau.a"]<qt(level/2,n-3)),1)
   maxa <- min(which(val[,"tau.a"]>qt(1-level/2,n-3)),nrow(val))
+  ret <- cbind(val[mina,c("m", "s", "a")], val[maxa,c("m", "s", "a")])
+  if(ret[1,2]<m) ret[,2] <- NA
+  if(ret[1,1]>m) ret[,2] <- NA
   return(cbind(val[mina,c("m", "s", "a")], val[maxa,c("m", "s", "a")]))
 }
 ```
@@ -117,7 +122,7 @@ getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=
   if(inherits(fit, "try-error")) return(list(x=x, pred=NULL, fit=fit))
   x$fitted <-c(rep(NA, day1-1), predict(fit, newdata=subx)*maxy/subx$day)
   
-  pred <- data.frame(day=((nrow(x)+1):maxh)-day1+1+xshift, date=x$date[1]+nrow(x):(maxh-1))
+  pred <- data.frame(day=((nrow(x)+1):(nrow(x)+maxh))-day1+1+xshift, date=x$date[1]+nrow(x):(nrow(x)+maxh-1))
   pred$x <- log(pred$day)
   pred$pred <- predict(fit, newdata=pred)*maxy/pred$day
   
@@ -153,19 +158,40 @@ getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=
 ```
 
 ```{r myfun}
-myfun <- function(data, reg, posmin=100, maxh=100, xshift=0, bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05){
-  b<-subset(data, region==reg)
-  if(max(b$positive)<1000) return()
+myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-15", maxdate="2020-09-01", xshift=0, bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05){
+  mindate <- as.Date(mindate)
+  maxdate <- as.Date(maxdate)
+  library(dplyr)
+  b <- data %>% 
+      subset(region %in% reg) %>%
+      dplyr::group_by(date) %>%
+      dplyr::summarize_if(is.numeric, function(x){ifelse(all(is.na(x)), NA, sum(x, na.rm=TRUE))})
+    # This will not have the region column, so we add that back on
+  if(missing(regname)) reg <- paste(reg, collapse="+") else reg <- regname
+  b$region <- reg
+
+  #b<-subset(data, region==reg)
+  if(max(b$positive)<500) return()
   day1 <- min(which(b$positive>posmin))
   
   b$new.cases <- c(NA, diff(b$positive))
-  if(reg=="MI") b$new.cases[b$new.cases==5269]=600 #hack to fix MI for now
-  if(reg=="France") b$new.cases[b$new.cases==25615]=7000 #hack to fix France for now
+  if(identical(reg, "Hubei China")) b$new.cases[b$new.cases>10000]=NA #hack 
+  if(identical(reg, "France")) b$new.cases[b$new.cases>10000]=NA #hack
+  if(identical(reg, "Hungary")) b$new.cases[b$new.cases>200]=NA #hack
   cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
   
   fit <- getfit(b, posmin=posmin, maxh=maxh, xshift=xshift,
                 fun=fun, s.fix=s.fix, sig=sig)
-  if(inherits(fit$fit, "try-error")) return()
+  if(inherits(fit$fit, "try-error")){
+    b <- fit$x
+    bm <- 1.05*max(b$new.cases, na.rm=TRUE)
+    p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
+      ggtitle(reg) +
+      scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
+                   date_labels="%b")
+    p <- p + annotate("text", x=mindate+1, y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
+    return(list(p=p))
+  }
   
   # updated with fitted
   b <- fit$x
@@ -176,11 +202,13 @@ myfun <- function(data, reg, posmin=100, maxh=100, xshift=0, bad.reg=NULL, fun="
     geom_point(data=subset(b, positive>posmin), col="blue") +
     geom_line(aes(x=date, y=fitted), data=b) +
     geom_line(aes(x=date, y=pred), data=pred, color="red") +
-    ggtitle(reg)
+    ggtitle(reg) +
+    scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
+                 date_labels="%b")
   
   npos <- max(b$positive, na.rm=TRUE)+sum(pred$pred, na.rm=TRUE)
   ndeaths.p <- max(b$death, na.rm=TRUE)+
-    sum(b$new.cases[(nrow(b)-7):nrow(b)])*cfr
+    sum(b$new.cases[(nrow(b)-7):nrow(b)], na.rm=TRUE)*cfr
   ndeaths <- ndeaths.p +
     sum(pred$pred, na.rm=TRUE)*cfr
   
@@ -209,7 +237,7 @@ myfun <- function(data, reg, posmin=100, maxh=100, xshift=0, bad.reg=NULL, fun="
       geom_line(data=fit$pred, aes(x=date, y=pred.low), linetype="dashed", color="red") +
       geom_line(data=fit$pred, aes(x=date, y=pred.high), linetype="dashed", color="red") + 
       geom_line(data=fit$pred, aes(x=date, y=pred), color="red")
-    p <- p + annotate("text", x=min(b$date), y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
+    p <- p + annotate("text", x=mindate+1, y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
     
     
   }else{
@@ -220,7 +248,7 @@ myfun <- function(data, reg, posmin=100, maxh=100, xshift=0, bad.reg=NULL, fun="
                     "Deaths =", round(ndeaths), "CFR =",
                     round(100*cfr,digits=2), "\n",
                     "s = ", round(cfs[2],3), "sig = ", round(summary(fit$fit)$sigma,3)))
-    p <- p + annotate("text", x=min(b$date), y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
+    p <- p + annotate("text", x=mindate+1, y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
     
   }
   
@@ -230,7 +258,7 @@ myfun <- function(data, reg, posmin=100, maxh=100, xshift=0, bad.reg=NULL, fun="
 
 ## Lombardia
 
-Lombardia is my case study area and I will use the $\sigma$ for this region as the $\sigma$ parameter for the curves in other areas.
+Lombardia is my case study area. Population size 10 million (2019).
 
 ```{r Lomb-forecast}
 p <- myfun(italy, "Lombardia")
@@ -242,26 +270,81 @@ s <- coef(p$fit)[2]
 
 ```{r China-forecast}
 for(i in c("Hubei China")){
+  p <- myfun(world, i, posmin=100, maxh=150, mindate="2020-01-01", maxdate="2020-05-01")
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## Scandinavia
+
+```{r  Scandinavia-forecast}
+for(i in c("Denmark", "Finland", "Norway",
+           "Sweden")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
-## A few European Countries
+## British Isles
 
-```{r  Europe-forecast}
-for(i in c("Austria", "Belgium", "Czechia", "Denmark",
-           "France", "Germany", 
-           "Ireland", "Italy", 
-           "Norway", "Netherlands", 
-           "Poland", 
-           "Spain",  "Sweden", 
+```{r  UK-forecast}
+for(i in c("Ireland", 
            "United Kingdom")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
+## Germany and Benelux
+
+```{r  Germanic-forecast}
+for(i in c("Belgium", "Netherlands", 
+           "Luxembourg", 
+           "Germany", "Switzerland")){
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## Central Europe
+
+```{r  CEurope-forecast}
+for(i in c("Austria", "Czechia", "Hungary", "Poland",
+           "Slovenia")){
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## Southern Europe
+
+```{r  SEurope-forecast}
+for(i in c("France", "Italy", "Portugal",
+           "Spain")){
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## Balkans
+
+```{r  Balkans-forecast}
+for(i in c("Albania", "Romania", "Bulgaria",
+           "Greece", 
+           "Serbia", "Montenegro", "Croatia", "Slovenia")){
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+## Former USSR
+
+```{r  Balkans-forecast}
+for(i in c("Russia", "Ukraine", "Belarus")){
+  p <- myfun(world, i, posmin=100, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
 
 ```{r  Asia-forecast1, eval=FALSE}
 for(i in c("Japan", "India", "Pakistan")){
@@ -278,6 +361,7 @@ for(i in c("US", "Canada")){
   if(inherits(p, "list")) plot(p$p)
 }
 ```
+
 ```{r Mex-forecast}
 for(i in c("Mexico")){
   p <- myfun(world, i, posmin=100, maxh=150)
@@ -288,7 +372,7 @@ for(i in c("Mexico")){
 ## South America
 
 ```{r SAmer-forecast}
-for(i in c("Brazil", "Chile")){
+for(i in c("Brazil", "Chile", "Argentina")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
@@ -297,20 +381,151 @@ for(i in c("Brazil", "Chile")){
 
 ## US States
 
+## New England
+
+```{r states-forecast-new-england}
+p <- myfun(states, c("ME","VT","NH","MA","RI","CT"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## Middle Atlantic
+
+```{r states-forecast-mid-atlantic}
+p <- myfun(states, c("NY","NJ","PA"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+
+## East North Central Midwest
+
+```{r states-forecast-emid}
+p <- myfun(states, c("OH", "IN", "IL", "WI", "MI"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## West North Central Midwest
+
+```{r states-forecast-wmid}
+p <- myfun(states, c("MN", "MO", "ND", "SD", "IA", "NE", "KS"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## South Atlantic North
+
+
+```{r states-forecast-southatlantic}
+p <- myfun(states, c("DC", "DE", "VA", "WV", "MD"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## South Atlantic South
+
+
+```{r states-forecast-southatlanticsouth}
+p <- myfun(states, c("GA", "FL", "SC", "NC"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## East South Central
+
+
+```{r states-forecast-eastsouth}
+p <- myfun(states, c("AL", "MS", "KY", "TN"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## West South Central
+
+```{r states-forecast-westsouth}
+p <- myfun(states, c("TX", "OK", "AR"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+Louisiana is odd given their early outbreak so I am leaving them out.
+
+```{r states-forecast-LA}
+p <- myfun(states, c("LA"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## Mountain North
+
+```{r states-forecast-mtnnorth}
+p <- myfun(states, c("ID", "MT", "WY"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## Mountain Southwest
+
+```{r states-forecast-mtnsw}
+p <- myfun(states, c("CO", "UT", "NV", "CO", "NM", "AZ"), posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## West wo Southern CA
+
+```{r states-forecast-westnosocal}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+cacounties <- unique(world$region[str_detect(world$region, "California")])
+ncacounties <- cacounties[!cacounties %in% reg & 
+                            !cacounties=="California US" & 
+                            !cacounties=="Out of CA California US" &
+                            !cacounties=="Unassigned California US"]
+ncacounties <- as.character(ncacounties)
+p <- myfun(world, c("Washington US", "Oregon US", ncacounties), regname="West minus SoCal", posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+## Southern Californa
+
+```{r states-forecast-southca}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+p <- myfun(world, reg, regname="Southern CA", posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+
+# Individual States
+
 ### Northeast
 
 ```{r states-forecast-northeast}
-for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "ME", "NH", "DC")){
+for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "DC")){
   p <- myfun(states, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
 
+```{r states-forecast-north}
+for(i in c("ME", "NH", "VT")){
+  p <- myfun(states, i, posmin=10, maxh=150)
+  if(inherits(p, "list")) plot(p$p)
+}
+```
+
+
+
 ### Southeast
 
 ```{r states-forecast-southeast}
 for(i in c("FL", "VA", "SC", "NC", "GA")){
-  p <- myfun(states, i, posmin=10, maxh=150)
+  p <- myfun(states, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
@@ -319,7 +534,7 @@ for(i in c("FL", "VA", "SC", "NC", "GA")){
 
 ```{r states-forecast-south}
 for(i in c("TN", "KY", "AL", "MS", "AR", "LA")){
-  p <- myfun(states, i, posmin=100, maxh=150)
+  p <- myfun(states, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
 ```
@@ -352,10 +567,34 @@ for(i in c("WA", "CA", "OR")){
 ```
 
 ```{r states-forecast-westcoast2}
-for(i in c("Washington US", "California US", "Oregon US")){
+for(i in c("Washington US", "Oregon US")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
+```
+
+```{r states-forecast-socal}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+p <- myfun(world, reg, regname="Southern CA", posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
+```
+
+```{r states-forecast-norcal}
+cacounties <- unique(world$region[str_detect(world$region, "California")])
+ncacounties <- cacounties[!cacounties %in% reg & 
+                            !cacounties=="California US" & 
+                            !cacounties=="Out of CA California US" &
+                            !cacounties=="Unassigned California US"]
+p <- myfun(world, ncacounties, regname="Northern CA", posmin=100, maxh=150)
+if(inherits(p, "list")) plot(p$p)
 ```
 
 ### South central

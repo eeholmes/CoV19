@@ -324,33 +324,112 @@ $(document).ready(function () {
 
 <p>These are forecast by fitting a log-normal shape curve the new positive cases and estimating deaths using the 7-lag CFR. The 95% confidence intervals on the forecasts are shown.</p>
 <p>These are just toy forecasts to try to understand the behavior of statistical forecasts using only a log-normal fit to new cases. This is somewhat similar to the strategy used in the <a href="https://covid19.healthdata.org/">UW model</a> except they fit to deaths and I am fitting to a 3-day average of reported positives.</p>
-<p>These are just experiments to understand the nature of these kind of fits. Don’t put any stock whatsoever into these ‘forecasts’. One thing I’ve noticed is that, the fitting algorithm seems to like to put the peak at the end of the data. Perhaps that is true or perhaps this approach is biased that way. I am fitting a lognormal curve and that is a very specific curve shape. That curve may be imposing too much ‘information’ when there is no real information in the data about the location of the peak.</p>
+<p>These are just experiments to understand the nature of these kind of fits. Don’t put any stock whatsoever into these ‘forecasts’. If the new cases are still going up exponentially, then the model has no information about where the peak might be and the model cannot fit. In that case, I show the new cases only.</p>
+<p>If the model fits, then the blue dots are the smoothed (3-day average) new cases to which the model was fit.</p>
 <div id="lombardia" class="section level2">
 <h2>Lombardia</h2>
-<p>Lombardia is my case study area and I will use the <span class="math inline">\(\sigma\)</span> for this region as the <span class="math inline">\(\sigma\)</span> parameter for the curves in other areas.</p>
+<p>Lombardia is my case study area. Population size 10 million (2019).</p>
 <p><img src="Forecasts_files/figure-html/Lomb-forecast-1.png" width="672" /></p>
 </div>
 <div id="hubei-china" class="section level2">
 <h2>Hubei China</h2>
 <p><img src="Forecasts_files/figure-html/China-forecast-1.png" width="672" /></p>
 </div>
-<div id="a-few-european-countries" class="section level2">
-<h2>A few European Countries</h2>
-<p><img src="Forecasts_files/figure-html/Europe-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-3.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-4.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-5.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-6.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-7.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-8.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-9.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-10.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-11.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-12.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-13.png" width="672" /><img src="Forecasts_files/figure-html/Europe-forecast-14.png" width="672" /></p>
+<div id="scandinavia" class="section level2">
+<h2>Scandinavia</h2>
+<p><img src="Forecasts_files/figure-html/Scandinavia-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/Scandinavia-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/Scandinavia-forecast-3.png" width="672" /><img src="Forecasts_files/figure-html/Scandinavia-forecast-4.png" width="672" /></p>
+</div>
+<div id="british-isles" class="section level2">
+<h2>British Isles</h2>
+<p><img src="Forecasts_files/figure-html/UK-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/UK-forecast-2.png" width="672" /></p>
+</div>
+<div id="germany-and-benelux" class="section level2">
+<h2>Germany and Benelux</h2>
+<p><img src="Forecasts_files/figure-html/Germanic-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/Germanic-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/Germanic-forecast-3.png" width="672" /><img src="Forecasts_files/figure-html/Germanic-forecast-4.png" width="672" /></p>
+</div>
+<div id="central-europe" class="section level2">
+<h2>Central Europe</h2>
+<p><img src="Forecasts_files/figure-html/CEurope-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/CEurope-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/CEurope-forecast-3.png" width="672" /><img src="Forecasts_files/figure-html/CEurope-forecast-4.png" width="672" /><img src="Forecasts_files/figure-html/CEurope-forecast-5.png" width="672" /></p>
+</div>
+<div id="southern-europe" class="section level2">
+<h2>Southern Europe</h2>
+<p><img src="Forecasts_files/figure-html/SEurope-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/SEurope-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/SEurope-forecast-3.png" width="672" /><img src="Forecasts_files/figure-html/SEurope-forecast-4.png" width="672" /></p>
+</div>
+<div id="balkans" class="section level2">
+<h2>Balkans</h2>
+<p><img src="Forecasts_files/figure-html/Balkans-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/Balkans-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/Balkans-forecast-3.png" width="672" /><img src="Forecasts_files/figure-html/Balkans-forecast-4.png" width="672" /><img src="Forecasts_files/figure-html/Balkans-forecast-5.png" width="672" /><img src="Forecasts_files/figure-html/Balkans-forecast-6.png" width="672" /><img src="Forecasts_files/figure-html/Balkans-forecast-7.png" width="672" /></p>
 </div>
 <div id="north-america" class="section level2">
 <h2>North America</h2>
-<p><img src="Forecasts_files/figure-html/NAmer-forecast1-1.png" width="672" /><img src="Forecasts_files/figure-html/NAmer-forecast1-2.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/NAmer-forecast1-1.png" width="672" /><img src="Forecasts_files/figure-html/NAmer-forecast1-2.png" width="672" /> <img src="Forecasts_files/figure-html/Mex-forecast-1.png" width="672" /></p>
 </div>
 <div id="south-america" class="section level2">
 <h2>South America</h2>
-<p><img src="Forecasts_files/figure-html/SAmer-forecast-1.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/SAmer-forecast-1.png" width="672" /><img src="Forecasts_files/figure-html/SAmer-forecast-2.png" width="672" /><img src="Forecasts_files/figure-html/SAmer-forecast-3.png" width="672" /></p>
 </div>
 <div id="us-states" class="section level2">
 <h2>US States</h2>
+</div>
+<div id="new-england" class="section level2">
+<h2>New England</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-new-england-1.png" width="672" /></p>
+</div>
+<div id="middle-atlantic" class="section level2">
+<h2>Middle Atlantic</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-mid-atlantic-1.png" width="672" /></p>
+</div>
+<div id="east-north-central-midwest" class="section level2">
+<h2>East North Central Midwest</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-emid-1.png" width="672" /></p>
+</div>
+<div id="west-north-central-midwest" class="section level2">
+<h2>West North Central Midwest</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-wmid-1.png" width="672" /></p>
+</div>
+<div id="south-atlantic-north" class="section level2">
+<h2>South Atlantic North</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-southatlantic-1.png" width="672" /></p>
+</div>
+<div id="south-atlantic-south" class="section level2">
+<h2>South Atlantic South</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-southatlanticsouth-1.png" width="672" /></p>
+</div>
+<div id="east-south-central" class="section level2">
+<h2>East South Central</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-eastsouth-1.png" width="672" /></p>
+</div>
+<div id="west-south-central" class="section level2">
+<h2>West South Central</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-westsouth-1.png" width="672" /></p>
+<p>Louisiana is odd given their early outbreak so I am leaving them out.</p>
+<p><img src="Forecasts_files/figure-html/states-forecast-LA-1.png" width="672" /></p>
+</div>
+<div id="mountain-north" class="section level2">
+<h2>Mountain North</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-mtnnorth-1.png" width="672" /></p>
+</div>
+<div id="mountain-southwest" class="section level2">
+<h2>Mountain Southwest</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-mtnsw-1.png" width="672" /></p>
+</div>
+<div id="west-wo-southern-ca" class="section level2">
+<h2>West wo Southern CA</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-westnosocal-1.png" width="672" /></p>
+</div>
+<div id="southern-californa" class="section level2">
+<h2>Southern Californa</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-southca-1.png" width="672" /></p>
+</div>
+<div id="northern-california" class="section level2">
+<h2>Northern California</h2>
+<p><img src="Forecasts_files/figure-html/states-forecast-northca-1.png" width="672" /></p>
+</div>
+<div id="individual-states" class="section level1">
+<h1>Individual States</h1>
 <div id="northeast" class="section level3">
 <h3>Northeast</h3>
-<p><img src="Forecasts_files/figure-html/states-forecast-northeast-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-4.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-5.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-6.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-7.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-8.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-9.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-northeast-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-4.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-5.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-6.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-7.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-northeast-8.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-north-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-north-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-north-3.png" width="672" /></p>
 </div>
 <div id="southeast" class="section level3">
 <h3>Southeast</h3>
@@ -358,15 +437,15 @@ $(document).ready(function () {
 </div>
 <div id="south" class="section level3">
 <h3>South</h3>
-<p><img src="Forecasts_files/figure-html/states-forecast-south-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-4.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-5.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-south-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-4.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-5.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-south-6.png" width="672" /></p>
 </div>
 <div id="midwest" class="section level3">
 <h3>Midwest</h3>
-<p><img src="Forecasts_files/figure-html/states-forecast-midwest-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-midwest-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-midwest-3.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-midwest-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-midwest-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-midwest-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-midwest-4.png" width="672" /></p>
 </div>
 <div id="center-north" class="section level3">
 <h3>Center North</h3>
-<p><img src="Forecasts_files/figure-html/states-forecast-cn-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-cn-2.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-cn-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-cn-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-cn-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-cn-4.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-cn-5.png" width="672" /></p>
 </div>
 <div id="west-coast" class="section level3">
 <h3>West coast</h3>
@@ -374,11 +453,11 @@ $(document).ready(function () {
 </div>
 <div id="south-central" class="section level3">
 <h3>South central</h3>
-<p><img src="Forecasts_files/figure-html/states-forecast-southcentral-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-southcentral-2.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-southcentral-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-southcentral-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-southcentral-3.png" width="672" /></p>
 </div>
 <div id="four-corners" class="section level3">
 <h3>Four corners</h3>
-<p><img src="Forecasts_files/figure-html/states-forecast-fourcorners-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-4.png" width="672" /></p>
+<p><img src="Forecasts_files/figure-html/states-forecast-fourcorners-1.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-2.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-3.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-4.png" width="672" /><img src="Forecasts_files/figure-html/states-forecast-fourcorners-5.png" width="672" /></p>
 </div>
 <div id="rockies" class="section level3">
 <h3>Rockies</h3>

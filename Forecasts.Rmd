@@ -551,7 +551,7 @@ for(i in c("OH", "MI", "IN", "IL")){
 ### Center North
 
 ```{r states-forecast-cn}
-for(i in c("WI", "MN", "SD", "ND", "IA")){
+for(i in c("WI", "MN", "SD", "ND", "IA", "KS", "NE")){
   p <- myfun(states, i, posmin=10, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }

@@ -285,6 +285,16 @@ for(i in c("Denmark", "Finland", "Norway",
 }
 ```
 
+```{r  denmark-forecast}
+i="Denmark"
+p <- myfun(world, i, posmin=100, maxh=150)
+if(inherits(p, "list")){ 
+  p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-15")); 
+  p$p <- p$p+annotate("text", x=as.Date("2020-04-15"), y=1, label="primary schools open", hjust=0)
+  p$p 
+  }
+```
+
 ## British Isles
 
 ```{r  UK-forecast}
@@ -300,10 +310,20 @@ for(i in c("Ireland",
 ```{r  Germanic-forecast}
 for(i in c("Belgium", "Netherlands", 
            "Luxembourg", 
-           "Germany", "Switzerland")){
+           "Switzerland")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
+```
+
+```{r  Germany-forecast}
+i="Germany"
+p <- myfun(world, i, posmin=100, maxh=150)
+if(inherits(p, "list")){ 
+  p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-20")); 
+  p$p <- p$p+annotate("text", x=as.Date("2020-04-20"), y=1, label="opening small shops", hjust=0)
+  p$p 
+  }
 ```
 
 ## Central Europe
@@ -314,6 +334,16 @@ for(i in c("Austria", "Czechia", "Hungary", "Poland",
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
 }
+```
+
+```{r  Austria-forecast}
+i="Austria"
+p <- myfun(world, i, posmin=100, maxh=150)
+if(inherits(p, "list")){ 
+  p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-14")); 
+  p$p <- p$p+annotate("text", x=as.Date("2020-04-14"), y=1, label="opening small shops", hjust=0)
+  p$p 
+  }
 ```
 
 ## Southern Europe
@@ -346,7 +376,7 @@ for(i in c("Russia", "Ukraine", "Belarus")){
 }
 ```
 
-```{r  Asia-forecast1, eval=FALSE}
+```{r  Asia-forecast}
 for(i in c("Japan", "India", "Pakistan")){
   p <- myfun(world, i, posmin=100, maxh=150)
   if(inherits(p, "list")) plot(p$p)
@@ -381,64 +411,68 @@ for(i in c("Brazil", "Chile", "Argentina")){
 
 ## US States
 
+```{r stateplotfun}
+stateplot <- function(reg, posmin=100, maxh=150){
+regfull <- state.name[match(reg, state.abb)]
+popmill <- round(sum(statepop$POPESTIMATE2019[match(regfull, statepop$NAME)], na.rm=TRUE)/1e6, digits=2)
+p <- myfun(states, reg, posmin=posmin, maxh=maxh)
+if(inherits(p, "list")){
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+ plot(p$p)
+}
+}
+```
+
 ## New England
 
 ```{r states-forecast-new-england}
-p <- myfun(states, c("ME","VT","NH","MA","RI","CT"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("ME","VT","NH","MA","RI","CT"))
 ```
 
 ## Middle Atlantic
 
 ```{r states-forecast-mid-atlantic}
-p <- myfun(states, c("NY","NJ","PA"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("NY","NJ","PA"))
 ```
 
 
 ## East North Central Midwest
 
 ```{r states-forecast-emid}
-p <- myfun(states, c("OH", "IN", "IL", "WI", "MI"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("OH", "IN", "IL", "WI", "MI"))
 ```
 
 ## West North Central Midwest
 
 ```{r states-forecast-wmid}
-p <- myfun(states, c("MN", "MO", "ND", "SD", "IA", "NE", "KS"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("MN", "MO", "ND", "SD", "IA", "NE", "KS"))
 ```
 
 ## South Atlantic North
 
 
 ```{r states-forecast-southatlantic}
-p <- myfun(states, c("DC", "DE", "VA", "WV", "MD"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("DC", "DE", "VA", "WV", "MD"))
 ```
 
 ## South Atlantic South
 
 
 ```{r states-forecast-southatlanticsouth}
-p <- myfun(states, c("GA", "FL", "SC", "NC"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("GA", "FL", "SC", "NC"))
 ```
 
 ## East South Central
 
 
 ```{r states-forecast-eastsouth}
-p <- myfun(states, c("AL", "MS", "KY", "TN"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("AL", "MS", "KY", "TN"))
 ```
 
 ## West South Central
 
 ```{r states-forecast-westsouth}
-p <- myfun(states, c("TX", "OK", "AR"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("TX", "OK", "AR"))
 ```
 
 Louisiana is odd given their early outbreak so I am leaving them out.
@@ -451,15 +485,13 @@ if(inherits(p, "list")) plot(p$p)
 ## Mountain North
 
 ```{r states-forecast-mtnnorth}
-p <- myfun(states, c("ID", "MT", "WY"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("ID", "MT", "WY"), posmin=10)
 ```
 
 ## Mountain Southwest
 
 ```{r states-forecast-mtnsw}
-p <- myfun(states, c("CO", "UT", "NV", "CO", "NM", "AZ"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("CO", "UT", "NV", "NM", "AZ"))
 ```
 
 ## West wo Southern CA
@@ -481,7 +513,12 @@ ncacounties <- cacounties[!cacounties %in% reg &
                             !cacounties=="Unassigned California US"]
 ncacounties <- as.character(ncacounties)
 p <- myfun(world, c("Washington US", "Oregon US", ncacounties), regname="West minus SoCal", posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+popmill <- sum(statepop$POPESTIMATE2019[match(c("Washington", "Oregon"), statepop$NAME)], na.rm=TRUE)+0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]
+popmill <- round(popmill/1e6, digits=2)
+if(inherits(p, "list")){
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+ plot(p$p)
+}
 ```
 
 ## Southern Californa
@@ -507,15 +544,13 @@ if(inherits(p, "list")) plot(p$p)
 
 ```{r states-forecast-northeast}
 for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "DC")){
-  p <- myfun(states, i, posmin=10, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=50)
 }
 ```
 
 ```{r states-forecast-north}
 for(i in c("ME", "NH", "VT")){
-  p <- myfun(states, i, posmin=10, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=10)
 }
 ```
 
@@ -525,8 +560,7 @@ for(i in c("ME", "NH", "VT")){
 
 ```{r states-forecast-southeast}
 for(i in c("FL", "VA", "SC", "NC", "GA")){
-  p <- myfun(states, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=10)
 }
 ```
 
@@ -534,8 +568,7 @@ for(i in c("FL", "VA", "SC", "NC", "GA")){
 
 ```{r states-forecast-south}
 for(i in c("TN", "KY", "AL", "MS", "AR", "LA")){
-  p <- myfun(states, i, posmin=10, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=50)
 }
 ```
 
@@ -543,17 +576,15 @@ for(i in c("TN", "KY", "AL", "MS", "AR", "LA")){
 
 ```{r states-forecast-midwest}
 for(i in c("OH", "MI", "IN", "IL")){
-  p <- myfun(states, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=100)
 }
 ```
 
 ### Center North
 
 ```{r states-forecast-cn}
-for(i in c("WI", "MN", "SD", "ND", "IA", "KS", "NE")){
-  p <- myfun(states, i, posmin=10, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+for(i in c("WI", "MN", "SD", "ND", "IA", "NE", "MO")){
+  stateplot(i, posmin=100)
 }
 ```
 
@@ -601,8 +632,7 @@ if(inherits(p, "list")) plot(p$p)
 
 ```{r states-forecast-southcentral}
 for(i in c("TX", "OK", "KS")){
-  p <- myfun(states, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=100)
 }
 ```
 
@@ -610,8 +640,7 @@ for(i in c("TX", "OK", "KS")){
 
 ```{r states-forecast-fourcorners}
 for(i in c("CO", "AZ", "UT", "NM", "NV")){
-  p <- myfun(states, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=10)
 }
 ```
 
@@ -619,7 +648,6 @@ for(i in c("CO", "AZ", "UT", "NM", "NV")){
 
 ```{r states-forecast-rockies}
 for(i in c("ID", "MT", "WY")){
-  p <- myfun(states, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i, posmin=10)
 }
 ```

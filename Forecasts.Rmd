@@ -275,13 +275,24 @@ for(i in c("Hubei China")){
 }
 ```
 
+# European Countries
+
+```{r worldplotfun}
+worldplot <- function(reg, posmin=100, maxh=150){
+popmill <- round(sum(worldpop$PopTotal[match(reg, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+p <- myfun(world, reg, posmin=posmin, maxh=maxh)
+if(inherits(p, "list")){
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+ plot(p$p)
+}
+}
+```
 ## Scandinavia
 
 ```{r  Scandinavia-forecast}
-for(i in c("Denmark", "Finland", "Norway",
-           "Sweden")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+for(i in c("Finland", "Norway", "Sweden")){
+  worldplot(i)
 }
 ```
 
@@ -291,6 +302,9 @@ p <- myfun(world, i, posmin=100, maxh=150)
 if(inherits(p, "list")){ 
   p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-15")); 
   p$p <- p$p+annotate("text", x=as.Date("2020-04-15"), y=1, label="primary schools open", hjust=0)
+  popmill <- round(sum(worldpop$PopTotal[match(i, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+    scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p 
   }
 ```
@@ -300,8 +314,7 @@ if(inherits(p, "list")){
 ```{r  UK-forecast}
 for(i in c("Ireland", 
            "United Kingdom")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -311,8 +324,7 @@ for(i in c("Ireland",
 for(i in c("Belgium", "Netherlands", 
            "Luxembourg", 
            "Switzerland")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -322,6 +334,9 @@ p <- myfun(world, i, posmin=100, maxh=150)
 if(inherits(p, "list")){ 
   p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-20")); 
   p$p <- p$p+annotate("text", x=as.Date("2020-04-20"), y=1, label="opening small shops", hjust=0)
+  popmill <- round(sum(worldpop$PopTotal[match(i, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+    scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p 
   }
 ```
@@ -329,10 +344,9 @@ if(inherits(p, "list")){
 ## Central Europe
 
 ```{r  CEurope-forecast}
-for(i in c("Austria", "Czechia", "Hungary", "Poland",
+for(i in c("Czechia", "Hungary", "Poland",
            "Slovenia")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -342,6 +356,8 @@ p <- myfun(world, i, posmin=100, maxh=150)
 if(inherits(p, "list")){ 
   p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-14")); 
   p$p <- p$p+annotate("text", x=as.Date("2020-04-14"), y=1, label="opening small shops", hjust=0)
+  popmill <- round(sum(worldpop$PopTotal[match(i, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p 
   }
 ```
@@ -351,8 +367,7 @@ if(inherits(p, "list")){
 ```{r  SEurope-forecast}
 for(i in c("France", "Italy", "Portugal",
            "Spain")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -362,8 +377,7 @@ for(i in c("France", "Italy", "Portugal",
 for(i in c("Albania", "Romania", "Bulgaria",
            "Greece", 
            "Serbia", "Montenegro", "Croatia", "Slovenia")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -371,15 +385,13 @@ for(i in c("Albania", "Romania", "Bulgaria",
 
 ```{r  Russia}
 for(i in c("Russia", "Ukraine", "Belarus")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
-```{r  Asia-forecast}
+```{r  Asia-forecast, eval=FALSE}
 for(i in c("Japan", "India", "Pakistan")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -387,15 +399,13 @@ for(i in c("Japan", "India", "Pakistan")){
 
 ```{r NAmer-forecast1}
 for(i in c("US", "Canada")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
 ```{r Mex-forecast}
 for(i in c("Mexico")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -403,8 +413,7 @@ for(i in c("Mexico")){
 
 ```{r SAmer-forecast}
 for(i in c("Brazil", "Chile", "Argentina")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  worldplot(i)
 }
 ```
 
@@ -414,10 +423,13 @@ for(i in c("Brazil", "Chile", "Argentina")){
 ```{r stateplotfun}
 stateplot <- function(reg, posmin=100, maxh=150){
 regfull <- state.name[match(reg, state.abb)]
+if("DC" %in% reg) regfull <- c("DC", regfull)
 popmill <- round(sum(statepop$POPESTIMATE2019[match(regfull, statepop$NAME)], na.rm=TRUE)/1e6, digits=2)
 p <- myfun(states, reg, posmin=posmin, maxh=maxh)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  #p$p <- p$p+ylim(0, max(500*popmill,layer_scales(p$p)$y$range$range[2]))
+  p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
  plot(p$p)
 }
 }
@@ -517,7 +529,8 @@ popmill <- sum(statepop$POPESTIMATE2019[match(c("Washington", "Oregon"), statepo
 popmill <- round(popmill/1e6, digits=2)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
- plot(p$p)
+  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+plot(p$p)
 }
 ```
 
@@ -534,7 +547,11 @@ reg <- c("San Diego California US",
          "Santa Barbara California US",
          "San Luis Obispo California US")
 p <- myfun(world, reg, regname="Southern CA", posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+if(inherits(p, "list")){
+popmill <- 0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  plot(p$p)
+}
 ```
 
 
@@ -590,19 +607,12 @@ for(i in c("WI", "MN", "SD", "ND", "IA", "NE", "MO")){
 
 ### West coast
 
-```{r states-forecast-westcoast, eval=FALSE}
+```{r states-forecast-westcoast}
 for(i in c("WA", "CA", "OR")){
-  p <- myfun(states, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
+  stateplot(i)
 }
 ```
 
-```{r states-forecast-westcoast2}
-for(i in c("Washington US", "Oregon US")){
-  p <- myfun(world, i, posmin=100, maxh=150)
-  if(inherits(p, "list")) plot(p$p)
-}
-```
 
 ```{r states-forecast-socal}
 reg <- c("San Diego California US",

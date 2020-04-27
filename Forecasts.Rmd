@@ -167,8 +167,8 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
       dplyr::group_by(date) %>%
       dplyr::summarize_if(is.numeric, function(x){ifelse(all(is.na(x)), NA, sum(x, na.rm=TRUE))})
     # This will not have the region column, so we add that back on
-  if(missing(regname)) reg <- paste(reg, collapse="+") else reg <- regname
-  b$region <- reg
+  if(missing(regname)) regname <- paste(reg, collapse="+")
+  b$region <- regname
 
   #b<-subset(data, region==reg)
   if(max(b$positive)<500) return()
@@ -185,11 +185,14 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
   if(inherits(fit$fit, "try-error")){
     b <- fit$x
     bm <- 1.05*max(b$new.cases, na.rm=TRUE)
+    popmill <- round(sum(popdata$population[match(c(reg, regname), popdata$name)], na.rm=TRUE)/1e6)
     p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
-      ggtitle(reg) +
+      ggtitle(regname) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                    date_labels="%b")
-    p <- p + annotate("text", x=mindate+1, y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
+    p <- p + annotate("text", x=mindate+1, y=bm, label=paste(
+      "\nDeaths to date\n", max(b$death, na.rm=TRUE), " ", 
+      round(max(b$death, na.rm=TRUE)/(popmill*1000), digits=2), "per thousand"), hjust=0)
     return(list(p=p))
   }
   
@@ -202,7 +205,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     geom_point(data=subset(b, positive>posmin), col="blue") +
     geom_line(aes(x=date, y=fitted), data=b) +
     geom_line(aes(x=date, y=pred), data=pred, color="red") +
-    ggtitle(reg) +
+    ggtitle(regname) +
     scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                  date_labels="%b")
   
@@ -219,32 +222,32 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     #p <- p + geom_line(data=df, aes(x=x, y=y), size=5, color="grey")
     if(fun=="f2") cfs <- coef(fit$fit)
     if(fun=="f4") cfs <- c(coef(fit$fit)[1], s.fix, coef(fit$fit)[2])
+    popmill <- round(sum(popdata$population[match(c(reg, regname), popdata$name)], na.rm=TRUE)/1e6)
     p <- p +
-      ggtitle(paste(reg, "\nPoint estimates: Positives =",
+      ggtitle(paste0(regname, "\nEst at Sept 1: Positives = ",
                     round(npos),
-                    "Deaths =", round(ndeaths), 
-                    "CFR =",
-                    round(100*cfr,digits=2),"\n",
-                    "Deaths low", 
+                    " Deaths = ", round(ndeaths), " (", 
+                    round(ndeaths/(popmill*1000), digits=2), "/thousand)\n",
+                    "Estimate range: Deaths low ", 
                     round(ndeaths.p+fit$cm[1]*cfr), 
-                    " to Deaths high", 
+                    " to Deaths high ", 
                     round(ndeaths.p+fit$cm[2]*cfr), "\n",
-                    "s = ", round(cfs[2],3), "sig = ", round(summary(fit$fit)$sigma,3), 
-                    "sig.ci =", round(max(summary(fit$fit)$sigma, sig),3)))
+                    "CFR Est = ",
+                    round(100*cfr,digits=2)))
     fit$pred$new.cases.smooth <- fit$pred$pred
     p <- p +
       geom_ribbon(data=fit$pred, aes(x=date, ymin = pred.low, ymax = pred.high), fill = "pink") +
       geom_line(data=fit$pred, aes(x=date, y=pred.low), linetype="dashed", color="red") +
       geom_line(data=fit$pred, aes(x=date, y=pred.high), linetype="dashed", color="red") + 
       geom_line(data=fit$pred, aes(x=date, y=pred), color="red")
-    p <- p + annotate("text", x=mindate+1, y=bm, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)), hjust=0)
+    p <- p + annotate("text", x=mindate+1, y=Inf, label=paste("\nDeaths to date\n", max(b$death, na.rm=TRUE)," ", round(max(b$death, na.rm=TRUE)/(popmill*1000),digits=2), "per thousand"), hjust=0, vjust=1)
     
     
   }else{
     cfs <- coef(fit$fit)
     
     p <- p +
-      ggtitle(paste(reg, "\nPoint estimates: Positives =", round(npos),
+      ggtitle(paste(regname, "\nPoint estimates: Positives =", round(npos),
                     "Deaths =", round(ndeaths), "CFR =",
                     round(100*cfr,digits=2), "\n",
                     "s = ", round(cfs[2],3), "sig = ", round(summary(fit$fit)$sigma,3)))
@@ -548,8 +551,9 @@ reg <- c("San Diego California US",
          "San Luis Obispo California US")
 p <- myfun(world, reg, regname="Southern CA", posmin=100, maxh=150)
 if(inherits(p, "list")){
-popmill <- 0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6
+popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   plot(p$p)
 }
 ```

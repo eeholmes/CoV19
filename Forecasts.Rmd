@@ -255,7 +255,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     
   }
   
-  return(list(p=p, fit=fit$fit, confint=fit$confval))
+  return(list(p=p, fit=fit$fit, confint=fit$confval, data=b))
 }
 ```
 
@@ -264,9 +264,14 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
 Lombardia is my case study area. Population size 10 million (2019).
 
 ```{r Lomb-forecast}
-p <- myfun(italy, "Lombardia")
-if(inherits(p, "list")) plot(p$p)
-s <- coef(p$fit)[2]
+reg <- "Lombardia"
+p <- myfun(italy, reg)
+popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
+if(inherits(p, "list")){
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+ plot(p$p)
+}
 ```
 
 ## Hubei China
@@ -416,7 +421,7 @@ for(i in c("Mexico")){
 
 ```{r SAmer-forecast}
 for(i in c("Brazil", "Chile", "Argentina")){
-  worldplot(i)
+  worldplot(i, posmin=10)
 }
 ```
 
@@ -425,9 +430,8 @@ for(i in c("Brazil", "Chile", "Argentina")){
 
 ```{r stateplotfun}
 stateplot <- function(reg, posmin=100, maxh=150){
-regfull <- state.name[match(reg, state.abb)]
-if("DC" %in% reg) regfull <- c("DC", regfull)
-popmill <- round(sum(statepop$POPESTIMATE2019[match(regfull, statepop$NAME)], na.rm=TRUE)/1e6, digits=2)
+#regfull <- state.name[match(reg, state.abb)]
+popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
 p <- myfun(states, reg, posmin=posmin, maxh=maxh)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
@@ -461,6 +465,10 @@ stateplot(c("OH", "IN", "IL", "WI", "MI"))
 
 ```{r states-forecast-wmid}
 stateplot(c("MN", "MO", "ND", "SD", "IA", "NE", "KS"))
+```
+
+```{r states-forecast-wmid2}
+stateplot(c("IA", "NE"))
 ```
 
 ## South Atlantic North
@@ -507,6 +515,10 @@ stateplot(c("ID", "MT", "WY"), posmin=10)
 
 ```{r states-forecast-mtnsw}
 stateplot(c("CO", "UT", "NV", "NM", "AZ"))
+```
+
+```{r states-forecast-mtnsw-nonv}
+stateplot(c("CO", "UT", "NM", "AZ"))
 ```
 
 ## West wo Southern CA
@@ -558,6 +570,17 @@ popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NA
 }
 ```
 
+
+```{r states-forecast-lacounty}
+reg <- "Los Angeles California US"
+p <- myfun(world, reg, regname="LA County CA", posmin=100, maxh=150)
+if(inherits(p, "list")){
+popmill <- 10.04
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  plot(p$p)
+}
+```
 
 # Individual States
 
@@ -629,7 +652,13 @@ reg <- c("San Diego California US",
          "Santa Barbara California US",
          "San Luis Obispo California US")
 p <- myfun(world, reg, regname="Southern CA", posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+if(inherits(p, "list")){
+  popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  plot(p$p)
+
+}
 ```
 
 ```{r states-forecast-norcal}
@@ -639,7 +668,13 @@ ncacounties <- cacounties[!cacounties %in% reg &
                             !cacounties=="Out of CA California US" &
                             !cacounties=="Unassigned California US"]
 p <- myfun(world, ncacounties, regname="Northern CA", posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+if(inherits(p, "list")){
+  popmill <- round(0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  plot(p$p)
+
+}
 ```
 
 ### South central

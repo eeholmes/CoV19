@@ -185,7 +185,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
   if(inherits(fit$fit, "try-error")){
     b <- fit$x
     bm <- 1.05*max(b$new.cases, na.rm=TRUE)
-    popmill <- round(sum(popdata$population[match(c(reg, regname), popdata$name)], na.rm=TRUE)/1e6)
+    popmill <- round(sum(popdata$population[match(unique(c(reg, regname)), popdata$name)], na.rm=TRUE)/1e6)
     p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
       ggtitle(regname) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
@@ -222,7 +222,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     #p <- p + geom_line(data=df, aes(x=x, y=y), size=5, color="grey")
     if(fun=="f2") cfs <- coef(fit$fit)
     if(fun=="f4") cfs <- c(coef(fit$fit)[1], s.fix, coef(fit$fit)[2])
-    popmill <- round(sum(popdata$population[match(c(reg, regname), popdata$name)], na.rm=TRUE)/1e6)
+    popmill <- round(sum(popdata$population[match(unique(c(reg, regname)), popdata$name)], na.rm=TRUE)/1e6)
     p <- p +
       ggtitle(paste0(regname, "\nEst at Sept 1: Positives = ",
                     round(npos),

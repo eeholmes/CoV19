@@ -101,7 +101,8 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
 ```{r getfit}
 # Get the fit
 getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=0.05){
-  x$new.cases.smooth <- stats::filter(x$new.cases, rep(1/3,3))
+  fil <- 3
+  x$new.cases.smooth <- stats::filter(x$new.cases, rep(1/fil,fil))
   day1 <- min(which(x$positive>posmin))
   x$day <- 1:nrow(x) - day1 + 1
   
@@ -296,6 +297,7 @@ if(inherits(p, "list")){
 }
 }
 ```
+
 ## Scandinavia
 
 ```{r  Scandinavia-forecast}
@@ -352,8 +354,7 @@ if(inherits(p, "list")){
 ## Central Europe
 
 ```{r  CEurope-forecast}
-for(i in c("Czechia", "Hungary", "Poland",
-           "Slovenia")){
+for(i in c("Czechia", "Hungary", "Poland", "Slovenia")){
   worldplot(i)
 }
 ```
@@ -373,8 +374,7 @@ if(inherits(p, "list")){
 ## Southern Europe
 
 ```{r  SEurope-forecast}
-for(i in c("France", "Italy", "Portugal",
-           "Spain")){
+for(i in c("France", "Italy", "Portugal", "Spain")){
   worldplot(i)
 }
 ```
@@ -411,9 +411,9 @@ for(i in c("US", "Canada")){
 }
 ```
 
-```{r Mex-forecast}
+```{r Mex-forecast, eval=FALSE}
 for(i in c("Mexico")){
-  worldplot(i)
+  worldplot(i, posmin=200)
 }
 ```
 
@@ -489,7 +489,7 @@ stateplot(c("GA", "FL", "SC", "NC"))
 
 
 ```{r states-forecast-eastsouth}
-stateplot(c("AL", "MS", "KY", "TN"))
+stateplot(c("AL", "MS", "KY", "TN"), posmin=10)
 ```
 
 ## West South Central
@@ -517,9 +517,6 @@ stateplot(c("ID", "MT", "WY"), posmin=10)
 stateplot(c("CO", "UT", "NV", "NM", "AZ"))
 ```
 
-```{r states-forecast-mtnsw-nonv}
-stateplot(c("CO", "UT", "NM", "AZ"))
-```
 
 ## West wo Southern CA
 
@@ -561,7 +558,7 @@ reg <- c("San Diego California US",
          "Kern California US",
          "Santa Barbara California US",
          "San Luis Obispo California US")
-p <- myfun(world, reg, regname="Southern CA", posmin=100, maxh=150)
+p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
 if(inherits(p, "list")){
 popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
@@ -570,17 +567,6 @@ popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NA
 }
 ```
 
-
-```{r states-forecast-lacounty}
-reg <- "Los Angeles California US"
-p <- myfun(world, reg, regname="LA County CA", posmin=100, maxh=150)
-if(inherits(p, "list")){
-popmill <- 10.04
-    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  plot(p$p)
-}
-```
 
 # Individual States
 
@@ -594,7 +580,7 @@ for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "DC")){
 
 ```{r states-forecast-north}
 for(i in c("ME", "NH", "VT")){
-  stateplot(i, posmin=10)
+  stateplot(i, posmin=100)
 }
 ```
 
@@ -604,7 +590,7 @@ for(i in c("ME", "NH", "VT")){
 
 ```{r states-forecast-southeast}
 for(i in c("FL", "VA", "SC", "NC", "GA")){
-  stateplot(i, posmin=10)
+  stateplot(i, posmin=100)
 }
 ```
 

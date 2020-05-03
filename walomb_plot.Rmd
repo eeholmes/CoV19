@@ -22,19 +22,34 @@ x <- subset(world, region=="Washington US")
 # tmp$positive <- 7984; tmp$death <- 308
 # x <- rbind(x, tmp)
 reg <- "Washington US"
-p <- my_plot(x, reg)
+p <- my_plot(x, reg) + xlim(as.Date("2020-03-01"), Sys.Date())
 p <- add_vline(p, "restaurants close", "2020-03-16")
 p <- add_vline(p, "12 days past restaurants closed", "2020-03-28", linetype="dashed")
 p <- add_vline(p, "stay at home order", "2020-03-23")
 p
 ```
 
+```{r}
+b=subset(states, region=="WA")
+tmp=diff(b$total.tests)
+plot(b$date[-1], zoo::rollapply(tmp,7,mean,fill=NA),type="l",ylab="tests (7-day average)", xlab="")
+par(new=TRUE)
+tmp=diff(b$positive)/diff(b$total.tests)
+tmp[b$date[-1]<as.Date("2020-03-03")] <- NA
+plot(b$date[-1], 100*zoo::rollapply(tmp,7,mean,na.rm=TRUE,fill=NA),yaxt="n", ylab="", ylim=c(0,20), type="l", lwd=2, col="blue")
+axis(4)
+title("WA 7-day (rolling) averages")
+legend("topleft", c("# of tests (left)", "% positive (right)"), lwd=c(1,2), col=c("black", "blue"))
+```
+
 ```{r world_plot, message=FALSE, warning=FALSE}
-x <- world
-x[x$date=="2020-02-12","positive"]=NA
-x[x$date=="2020-02-13","positive"]=NA
-p <- my_plot(x, "Hubei China", "2020-01-23")
-p
+reg = unique(world$region[str_detect(world$region, "Washington US")])
+reg <- reg[-1*(40:42)]
+for(i in reg){
+  if(max(subset(world, region==i)$positive)<100) next
+  p <- my_plot(world, i) + xlim(as.Date("2020-03-01"), Sys.Date())
+  if(!is.null(p)) plot(p)
+}
 ```
 
 

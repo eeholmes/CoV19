@@ -101,9 +101,9 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
 ```{r getfit}
 # Get the fit
 getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=0.05){
-  fil <- 3
+  fil <- 7 #must be odd
   x$new.cases.smooth <- stats::filter(x$new.cases, rep(1/fil,fil))
-  x$new.cases.smooth <- c(NA,zoo::rollapply(x$new.cases, fil, mean, na.rm=TRUE),NA)
+  x$new.cases.smooth <- c(rep(NA,floor(fil/2)),zoo::rollapply(x$new.cases, fil, mean, na.rm=TRUE), rep(NA,floor(fil/2)))
   day1 <- min(which(x$positive>posmin))
   x$day <- 1:nrow(x) - day1 + 1
   
@@ -189,7 +189,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     b <- fit$x
     bm <- 1.05*max(b$new.cases, na.rm=TRUE)
     popmill <- round(sum(popdata$population[match(unique(c(reg, regname)), popdata$name)], na.rm=TRUE)/1e6)
-    p <- ggplot(b, aes(x = date, y = new.cases)) + geom_point() +
+    p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
       ggtitle(regname) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                    date_labels="%b")
@@ -461,7 +461,7 @@ stateplot(c("NY","NJ","PA"))
 ## East North Central Midwest
 
 ```{r states-forecast-emid}
-stateplot(c("OH", "IN", "IL", "WI", "MI"), posmin=200)
+stateplot(c("OH", "IN", "IL", "WI", "MI"), posmin=20)
 ```
 
 ## West North Central Midwest
@@ -577,7 +577,7 @@ popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NA
 
 ```{r states-forecast-northeast}
 for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "DC")){
-  stateplot(i, posmin=50)
+  stateplot(i, posmin=100)
 }
 ```
 
@@ -677,7 +677,7 @@ if(inherits(p, "list")){
 
 ```{r states-forecast-southcentral}
 for(i in c("TX", "OK", "KS")){
-  stateplot(i, posmin=100)
+  stateplot(i, posmin=10)
 }
 ```
 

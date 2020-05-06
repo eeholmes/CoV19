@@ -311,7 +311,6 @@ i="Austria"
 austria <- worldplot(i)
 ```
 
-## Southern Europe
 
 ```{r  SEurope-forecast}
 i <- "France"
@@ -319,7 +318,6 @@ france <- worldplot(i)
 
 i <- "Italy"
 italyp <- worldplot(i)
-italyp <- italyp + ggtitle("")
 
 i <- "Spain"
 spain <- worldplot(i)
@@ -429,7 +427,6 @@ northwest <- p$p
 }
 ```
 
-## Southern Californa
 
 ```{r states-forecast-southca}
 reg <- c("San Diego California US",
@@ -457,8 +454,6 @@ midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"), posmin=20, fitit=FALSE)
 midwest2 <- stateplot(c("MN", "MO", "ND", "SD", "IA", "NE"))
 southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
 eastsouth <- stateplot(c("AL", "MS", "KY", "TN"), posmin=100)
-mtnwest <- stateplot(c("CO", "UT", "NV", "NM", "AZ"))
-southcentral <- stateplot(c("TX", "OK", "KS", "AR"), posmin=20, fitit=FALSE)
 grid.arrange(midwest1, midwest2, southatlantic, eastsouth)
 ```
 

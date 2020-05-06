@@ -12,7 +12,7 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-If the model fits, then the blue dots are the smoothed (7-day average) new cases to which the model was fit. The deaths are estimated as CFR (estimated based on 7-day lag) times estimated number of positives (from curve fitting a log-normal). The actual deaths are used for the time up to the current date and on to this are added future deaths (from estimate of new positives) and the deaths from the last 7-days of new positives.
+The dots are the smoothed (7-day average) of new cases. If plot has a model fit, then the model was fit to the blue dots.The deaths are estimated as CFR (estimated based on 7-day lag) times estimated number of positives (from curve fitting a log-normal). The actual deaths are used for the time up to the current date and on to this are added future deaths (from estimate of new positives) and the deaths from the last 7-days of new positives.
 
 ```{r thenormfuncs}
 # estimate mu, sigma and scaling
@@ -334,7 +334,7 @@ i <- "Greece"
 greece <- worldplot(i)
 ```
 
-# Things over by early June for much of Europe
+# Europe
 
 Most of Europe had an effective lockdown and the epidemic curves look like there will be low rates by early June. The death rates per million vary from 1900-600 for contries that took a slower pace of lockdown to under 100 deaths per million for countries that locked down early and stopped transmission effectively.
 
@@ -371,7 +371,7 @@ sweden <- worldplot("Sweden")
 grid.arrange(sweden, uk, nrow=1)
 ```
 
-## North America
+# United States
 
 My hope had been that by looking at Europe, I could understand what was likely to happen in the US, but that doesn't seem to be the case outside of the northeast.
 

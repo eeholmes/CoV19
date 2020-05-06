@@ -23,6 +23,8 @@ navbar:
       href: CFR.html
     - text: "Forecasts"
       href: Forecasts.html
+    - text: "Patterns"
+      href: Patterns.html
 
 output:
   html_document:

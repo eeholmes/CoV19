@@ -11,7 +11,7 @@
 
 
 
-<title>NY Plots</title>
+<title>Patterns</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -320,12 +320,55 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">NY Plots</h1>
+<h1 class="title toc-ignore">Patterns</h1>
 
 </div>
 
 
-<p><img src="ny_plot_files/figure-html/ny_plot-1.png" width="672" /></p>
+<p>If the model fits, then the blue dots are the smoothed (7-day average) new cases to which the model was fit. The deaths are estimated as CFR (estimated based on 7-day lag) times estimated number of positives (from curve fitting a log-normal). The actual deaths are used for the time up to the current date and on to this are added future deaths (from estimate of new positives) and the deaths from the last 7-days of new positives.</p>
+<div id="southern-europe" class="section level2">
+<h2>Southern Europe</h2>
+</div>
+<div id="things-over-by-early-june-for-much-of-europe" class="section level1">
+<h1>Things over by early June for much of Europe</h1>
+<p>Most of Europe had an effective lockdown and the epidemic curves look like there will be low rates by early June. The death rates per million vary from 1900-600 for contries that took a slower pace of lockdown to under 100 deaths per million for countries that locked down early and stopped transmission effectively.</p>
+<div id="regions-and-countries-with-high-spread-and-lockdown" class="section level2">
+<h2>Regions and countries with high spread and lockdown</h2>
+<p>Death rates 1900 to 600 per million people. Lockdown after widespread spread or lockdown insufficient.</p>
+<p><img src="Patterns_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="regions-with-effective-lockdown" class="section level2">
+<h2>Regions with effective lockdown</h2>
+<p>These are cases where new cases/million went over 50-100, but lockdown was effective and stopped the rise and lowered infection rate. Death rate 500 to 150 per million.</p>
+<p><img src="Patterns_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="regions-with-very-early-lockdown.-low-spread." class="section level2">
+<h2>Regions with very early lockdown. Low spread.</h2>
+<p>Death rate below 100 per million.</p>
+<p><img src="Patterns_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="sweden-and-the-uk" class="section level2">
+<h2>Sweden and the UK</h2>
+<p>Sweden has done a “soft” lockdown and the UK delayed lockdown. Both look to be headed towards the higher end of death rates per million in Europe, 800-1000 deaths per million, but it will be spread out over the whole summer. However we can’t really see much of the downward curve, things could definitely change. The projection is the ‘optimist’ projection assuming thing do not get worse.</p>
+<p><img src="Patterns_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="north-america" class="section level2">
+<h2>North America</h2>
+<p>My hope had been that by looking at Europe, I could understand what was likely to happen in the US, but that doesn’t seem to be the case outside of the northeast.</p>
+<p>New England and the Mid-Atlantic look a lot like Europe, at least like the European countries that have a high fraction infected. Projected reported death rates are looking like they’ll be close to 1000 per million and the curve is similar to what has been seen in Europe. If the curve continues (that’a a big if), then this wave of the epidemic would be over in early August. The same looks to be the case for Washington and Florida, although Washington has a new outbreak in Yakima (last 2 point on the curve) and that might break the curve for Washington.</p>
+<p><img src="Patterns_files/figure-html/states-forecast-new-england-midatlantic-1.png" width="672" /></p>
+<p>When we look across the US however, there is either no peak or, in WA+OR+NorCal, signs of a 2nd rise starting already.</p>
+</div>
+<div id="southern-californa" class="section level2">
+<h2>Southern Californa</h2>
+<p><img src="Patterns_files/figure-html/states-forecast-emid-1.png" width="672" /></p>
+<p><img src="Patterns_files/figure-html/states-forecast-sw-1.png" width="672" /></p>
+<p>Overall, it looks like a long summer. In terms of what kind of death rates to expect for the first wave in the US, in Europe and in the US Northeast, the high rates were about 1000 per million. In Europe, some countries controlled the wave down to under 500 per million or even under 100 per million.</p>
+<p>Right now in the US, only a handful of states have trajectories that look like European countries with a clear peak, a large portion of the downward decline done and no funky 2nd peaks starting: NY, ID, HI, FL, LA and maybe WA (if the Yakima outbreak doesn’t get out of control). HI is an island and closed entry (quarantine required) and ID outbreak was at a destination ski area. Both WA and LA show signs of a 2nd peak starting to form.</p>
+<p>So looking at the regional plots above, there is not any signal about where the peak might be. At the minimum, these regions will see double what the death rate to date is. That’s the bare minimum since since if you are not at the peak, even if the turn downward happened today, there’d still be the same number of deaths on the downward side. But the downward side tends to be thicker (slower descent) and the deaths from the last 7-days of positive cases have yet to show up.</p>
+<p><img src="Patterns_files/figure-html/four-states-1.png" width="672" /></p>
+</div>
+</div>
 
 
 

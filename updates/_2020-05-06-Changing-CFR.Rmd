@@ -1,6 +1,6 @@
 ---
 title: "Changing CFR"
-date: Wednesday, May 5, 2020
+date: "`r format(Sys.time(), '%A %b %d, %Y')`"
 ---
 
 ```{r setup, include=FALSE}

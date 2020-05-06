@@ -1,6 +1,6 @@
 ---
 title: "Patterns"
-date: Tuesday, May 5, 2020
+date: "`r format(Sys.time(), '%A %b %d, %Y')`"
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +13,7 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-The dots are the smoothed (7-day average) of new cases. If plot has a model fit, then the model was fit to the blue dots.The deaths are estimated as CFR (estimated based on 7-day lag) times estimated number of positives (from curve fitting a log-normal). The actual deaths are used for the time up to the current date and on to this are added future deaths (from estimate of new positives) and the deaths from the last 7-days of new positives.
+The dots are the smoothed (7-day average) of new cases. I switched to 7-day averaging to get rid of the weekly effect (fewer tests are done on the weekends). If plot has a model fit, then the model was fit to the blue dots. The deaths are estimated as CFR (estimated based on 7-day lag) times estimated number of positives (from curve fitting a log-normal). The actual deaths are used for the time up to the current date and on to this are added the expected deaths from the last 7-days of new positives (actual numbers) plus expected future deaths (from forecasted number of new positives).
 
 ```{r thenormfuncs}
 # estimate mu, sigma and scaling
@@ -464,12 +464,30 @@ southcentral <- stateplot(c("TX", "OK", "KS", "AR"), posmin=20, fitit=FALSE)
 grid.arrange(mtnwest, southcentral, northwest, socal)
 ```
 
-Overall, it looks like the first wave will last well into summer for most of the US (excluding part of the NE), even if the curves were to start turning downward today. In terms of what kind of death rates to expect for the first wave in the US, in Europe and in the US Northeast, the high rates were about 1000 per million. In Europe, some countries controlled the wave down to under 500 per million or even under 100 per million. 
-
-Right now in the US, only a handful of states have trajectories that look like European countries with a clear peak, a large portion of the downward decline done and no funky 2nd peaks starting: NY, ID, HI, FL, LA and maybe WA (if the Yakima outbreak doesn't get out of control). HI is an island and closed entry (quarantine required) and ID outbreak was at a destination ski area. Both WA and LA show signs of a 2nd peak starting to form.
-
 So looking at the regional plots above, there is not any signal about where the peak might be. At the minimum, these regions will see double what the deaths per million to date is. That's the bare minimum since since if you are not at the peak, even if the turn downward happened today, there'd still be the same number of deaths on the downward side. But the downward side tends to be thicker (slower descent) and the deaths from the last 7-days of positive cases have yet to show up. In terms of deaths per day, there is about a 7-day lag and the US case fatality rate is about 6%. So multiply the number on the y-axis by 0.06 to get a ballpark estimate of the number of deaths per day in 7 days later. 
+
+These results do not mean that the state or region's healthcare system will become overwhelmed. One of the top goals of the state's responses has been to ensure that the hospital capacity can meet demand. It was not known what the hospital and ICU need would be. The reports out of China were grim and the Lombardia healthcare system was overwhelmed. So there was obviously evidence that systems could and would become overwhelmed with enough cases. That happened in Lombardia, New York City, and New Orleans. In Lombarida, peak new cases were 200 per million (CFR ca 20%), in New York State (CFR ca 7%), the peak was 500 per million, and in Louisiana, the peak was 300 per million (CFR ca 5% after peak near 15%). Testing in Lombardia was focused on hospital cases, so the lower peak there is not necessarily indicative of lower hospital capacity (although they do have lower ICU capacity than say Germany). What we are seeing in the US states is a lot lower than that but new cases are going up and if they double or triple, some regions will get into the 300+ new cases per million level that swamped the New York City and New Orleans hospitals.
+
+Right now in the US, only a handful of states have trajectories that look like European countries with a clear peak, a large portion of the downward decline done and no funky 2nd peaks starting: NY, ID, HI, FL, SD, LA and maybe WA (if the Yakima outbreak doesn't get out of control). HI is an island and closed entry (quarantine required) and ID outbreak was at a destination ski area. Both WA and LA show signs of a 2nd peak starting to form.
+
 
 ```{r four-states}
 grid.arrange(stateplot("NY"), stateplot("FL"),  stateplot("WA", posmin=10), stateplot("LA"))
 ```
+
+```{r four-states2}
+grid.arrange(stateplot("SD"), stateplot("ID"),  stateplot("HI"), nrow=2)
+```
+
+## Summary 
+
+Overall, it looks like the first wave will last well into summer for most of the US (excluding part of the NE), even if the curves were to start turning downward today. What kind of death rates can we expect for the first wave in the US? In Europe, some countries controlled the wave down to under 500 per million or even under 100 per million while in the high-density areas of Europe and the US Northeast, the rates have been closer to 1000 per million and even up to 2000 per million in Lombardia (and likely NYC though I haven't looked that up). 
+
+The US is currently at 210 per million deaths. If we are at the peak of wave 1, then at bare minimum the rate will be double that but really more like 1.2 time 210 is a more realistic minimum (given long tail and that there is a 'backlog' of deaths from new cases prior to today.) However there is tremendous regional variation, with the highest deaths rates in the densely populated Northeast. That's driving the total US numbers. Outside of the Northeast, the death rates are well under 100 per million (like 30-60 per million). 
+
+It is not obvious to me what is going to happen in the regions with current low deaths per million (well under 100 per million). The virus 'wallops' some areas more than others and the causes are not obvious, i.e. you cannot always attribute it to differences in mitigations.
+https://www.nytimes.com/2020/05/03/world/asia/coronavirus-spread-where-why.html
+Though in Eastern Europe, early lockdown likely played an important role as many of their countries locked down before deaths occurred.
+https://www.theguardian.com/world/2020/may/05/why-has-eastern-europe-suffered-less-from-coronavirus-than-the-west
+The cases of South Dakota and Louisiana illustrate that communities can contain outbreaks. Conversely, we are seeing the virus spread steadily in the essential worker communities in the Northeast despite lockdown. We also see cases in rural Georgia and rural Louisiana where the virus has taken hold in low density counties. 
+

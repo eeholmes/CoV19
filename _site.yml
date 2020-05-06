@@ -1,6 +1,7 @@
 name: "cov19-website"
 output_dir: "docs"
 exclude: ["README_files", "README.md", "README.Rmd", "data", "inst", "man", "R", "DESCRIPTION", "NAMESPACE"]
+include: ["updates/*.html"]
 navbar:
   title: "CoV-19"
   left:
@@ -23,9 +24,9 @@ navbar:
       href: CFR.html
     - text: "Forecasts"
       href: Forecasts.html
-    - text: "Patterns"
-      href: Patterns.html
-
+    - text: "Updates"
+      href: Updates.html
+      
 output:
   html_document:
     theme: cosmo

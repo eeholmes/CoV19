@@ -471,7 +471,7 @@ stateplot(c("MN", "MO", "ND", "SD", "IA", "NE", "KS"))
 ```
 
 ```{r states-forecast-wmid2}
-stateplot(c("IA", "NE"))
+stateplot(c("IA", "NE"), posmin=10)
 ```
 
 ## South Atlantic North

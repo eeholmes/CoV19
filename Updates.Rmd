@@ -5,4 +5,4 @@ title: "Updates"
 * May 6, 2020 [7-day CFR Trends](updates/2020-05-06-Changing-CFR.html)
 * May 5, 2020 [Wave 1 Patterns](updates/2020-05-04-Patterns.html)
 * May 1, 2020 [Forecast Models](updates/2020-05-01-Forecast-Models.html)
-* April 29, 2020 [Opening UP](updates/2020-05-01-Opening-Up.html)
+* April 29, 2020 [COVID-19 in Rural Counties](updates/2020-04-29-Rural.html)

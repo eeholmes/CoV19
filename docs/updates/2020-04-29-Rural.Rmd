@@ -1,0 +1,78 @@
+---
+title: "COVID-19 in Rural Counties"
+date: April 29, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+Update 20. Coronavirus in Rural Counties.
+
+The largest numbers of cases are obviously in the cities (more people there = more cases even if per capita number of cases is low). On a per capita basis, many of the top counties are in rural America and it is mainly in counties with a meatpacking plant. I looked up the top 50 counties and then did some googling to find out where the hotspot in the county started. Note in all cases, the outbreak spreads. So the hotspot might be in the prison or meatpacking plant, but it spreads out from there as the outbreak progresses. You might have heard about the South Dakota meatpacking plant (outside Boise) as that got a bunch of press, but that's way down at 49. The main meatpacking outbreaks are in Iowa, Nebraska, Minnesota, Ohio. Another big rural outbreak is in SW Georgia -- though that includes Albany, GA, the outbreak there has spread into rural surrounding counties. 
+https://www.statista.com/statistics/1109053/coronavirus-covid19-cases-rates-us-americans-most-impacted-counties/
+
+per capita cases goes from 5.3 per 1000 for 1 to 1 per 1000 for 50.  As always these are the positive tests not total infections.
+
+28 of 50 of the top counties are rural and for 11 of theses the main hotspot was a meatpacking plant. 17 are associated with urban outbreaks (NYC, New Orleans, Boston); though note that 4 of the New Orleans associated counties are rural. Only 3 are associated with nursing home hotspots (i.e. initial hotspot was a nursing home).
+
+* 5 Rural - prisons
+* 11 Rural - meatpacking plants
+* 1 Rural - nursing home (unique case, involving visit to a rural nursing home from someone out of area)
+* 10 NYC outbreak
+* 6 New Orleans outbreak (4 are rural counties which were infected as the New Orleans outbreak spread)
+* 8 SW Georgia community spread (7 are rural counties)
+
+Single counties: Boston, Richland, Virgina - nursing homes, Sun Valley, ID ski town, AZ - Navajo Nation
+
+--------------------------
+
+Top positive tests per counties per capita
+
+1. Lincoln County, AR (prison)
+2. Bledsoe County, TN (prison)
+3. Rockland County, NY (NYC outbreak)
+4. Marion County, OH (prison)
+5. Pickaway County, OH (prison)
+6. Weschester County, NY (NYC outbreak)
+7. Nassau County, NY (NYC outbreak)
+8. Louisa County, IA (meatpacking plant)
+9. Dakota County, NE (meatpacking plant)
+10. Passaic County, JN (NYC outbreak)
+11. Blaine County, ID (skiing, Sun Valley)
+12. Randolph County, GA (community spread, SW Georgia)
+13. to 16 Suffolk, Orange, Union, Hudson Counties, NY (NYC outbreak)
+17. Early County, GA (community spread, SW Georgia)
+18. NYC County, NY (NYC outbreak)
+19. Terrell County, GA (community spread, SW Georgia)
+20. St John the Baptist Parish, LA (New Orleans outbreak)
+21. Orleans Parish, LA (New Orleans outbreak)
+22. Essex County, NJ (NYC outbreak)
+23. Dougherty County, GA (community spread, SW Georgia)
+24. Nobles County, MN (meatpacking plant)
+25. Bergen County, NJ (NYC outbreak)
+26. Tama County, IA (meatpacking plant)
+27. Dawson County, NE (meatpacking plant)
+28. Cass County, IN (meatpacking plant)
+29. Seward County, KS (meatpacking plant)
+30. Suffolk County, MA (Boston outbreak)
+31. Hall County, NE (meatpacking plant)
+32. Jefferson Parish, LA (New Orleans outbreak)
+33. Ford County, KS (meatpacking plant)
+34. Calhoun County, GA (community spread, SW Georgia)
+35. Iberville Parish, LA (New Orleans outbreak)
+36. Mitchell County, GA (community spread, SW Georgia)
+37. Middlesex County, NJ (NYC outbreak)
+38. Sumter County, GA (community spread, SW Georgia)
+39. Moore County, TX (meatpacking plant)
+40. Logan County, CO (prison)
+41. St James Parish, LA (New Orleans outbreak)
+42. Fairfield County, CT (nursing homes)
+43. Greer County, OK (nursing home)
+44. Lee County, GA (community spread, SW Georgia)
+45. St Charles Parish (New Orleans outbreak)
+46. Ocean County, NJ (NYC outbreak)
+47. Morris County, NJ (NYC outbreak)
+48. Richmond County, VA (nursing homes)
+49. Minnehaha County, SD (meatpacking) <- this is the one in the news
+50. McKinley County, NM (Navajo Nation)

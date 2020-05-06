@@ -2,5 +2,5 @@
 title: "Updates"
 ---
 
-* [7-day CFR Trends](updates/_2020-05-06-Changing-CFR.html)
-* [Wave 1 Patterns](updates/_2020-05-04-Patterns.html)
+* [7-day CFR Trends](updates/2020-05-06-Changing-CFR.html)
+* [Wave 1 Patterns](updates/2020-05-04-Patterns.html)

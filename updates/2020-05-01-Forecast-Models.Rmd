@@ -19,7 +19,12 @@ Some forecasting projects included in the above
 * UW IHME uses a curve-fitting statistical model: https://covid19.healthdata.org/united-states-of-america
 * Curve-Fitting algorithm behind IHME (non-linear mixed effects model) https://ihmeuw-msca.github.io/CurveFit/
 * Imperial College London, another time-varying growth model. Statistical. https://mrc-ide.github.io/covid19-short-term-forecasts/index.html
+* Forecast Hub: The Reich Lab at UMass-Amherst https://reichlab.io/covid19-forecast-hub/
 
 My little toy modeling effort is not on there:
 Eli: https://eeholmes.github.io/CoV19/Forecasts.html
 (I have a different job, lol) but I hope to compare my forecasts to the others since my model is similar (in philosophy) to IHME but is not a symmetric curve and doesn't plunge to zero on the right like the IHME model does. Also I model off new cases not deaths. It is argued that deaths are better data, but new cases is a 2 week early indicator for upcoming deaths. Yes, new cases suffers from changes in testing levels, but I'm not convinced that problem masks the epidemic trends at the local level. Also I use a time-varying CFR estimate to translate new cases into deaths, which I haven't seen before.
+
+More links:
+
+* How IHME projections change over time: https://www.covid-projections.com/

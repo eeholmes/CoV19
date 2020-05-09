@@ -70,6 +70,7 @@ fitf1<- function(subx, m=5, a=1, s=0.08, xshift=0){
 signx <- function(x) return(ifelse(x<0,-1,1))
 
 getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
+  if(coef(fit.best)[3] > 20) return(matrix(NA,3,2))
   m <- coef(fit.best)[1]
   s <- coef(fit.best)[2]
   sig <- max(summary(fit.best)$sigma, sig)
@@ -100,8 +101,7 @@ getcis <- function(fit.best, subx, m=20, s=0.2, sig=0.05, level=0.05, xshift=0){
 
 ```{r getfit}
 # Get the fit
-getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=0.05){
-  fil <- 7 #must be odd
+getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=0.05, fitit=TRUE, fil=7){
   x$new.cases.smooth <- stats::filter(x$new.cases, rep(1/fil,fil))
   x$new.cases.smooth <- c(rep(NA,floor(fil/2)),zoo::rollapply(x$new.cases, fil, mean, na.rm=TRUE), rep(NA,floor(fil/2)))
   day1 <- min(which(x$positive>posmin))
@@ -113,6 +113,8 @@ getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=
   subx$y <- subx$new.cases.smooth*subx$day
   maxy <- max(subx$y, na.rm=TRUE)
   subx$y <- subx$y/maxy
+  if(!fitit) return(list(x=x, subx=subx))
+  
   for(s in c(0.05,.1,1)){
     for(m in seq(10,200,25)+xshift){
       if(fun=="f2") fit<-try(nls(y~f2(x,c(m,s,a)), data=subx, start=list(m=log(m), s=s, a=max(subx$y, na.rm=TRUE)), control = list(maxiter = 500)), silent=TRUE)
@@ -130,7 +132,7 @@ getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=
   
   cm1=NA; cm2=NA
   confval1 <- try(confint(fit, level=0.95), silent=TRUE)
-  if(inherits(confval1, "try-error") || summary(fit)$sigma<0.03 || any(is.na(confval1)) ){ 
+  if(inherits(confval1, "try-error") || any(is.na(confval1)) ){ 
     confval <- try(getcis(fit.best=fit, subx=subx, level=0.05, xshift=xshift, sig=sig))
     if(!inherits(confval1, "try-error") && !inherits(confval, "try-error") && !any(any(is.na(confval1[,1])))) confval[,1] <- confval1[,1]
     if(!inherits(confval1, "try-error") && !inherits(confval, "try-error") && !any(any(is.na(confval1[,2])))) confval[,2] <- confval1[,2]
@@ -160,7 +162,7 @@ getfit <- function(x, posmin=100, maxh=200, xshift=0, fun="f2", s.fix=0.08, sig=
 ```
 
 ```{r myfun}
-myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-15", maxdate="2020-09-01", xshift=0, bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05){
+myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-15", maxdate="2020-09-01", xshift=0, bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05, fitit=TRUE){
   mindate <- as.Date(mindate)
   maxdate <- as.Date(maxdate)
   library(dplyr)
@@ -184,8 +186,8 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
   cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
   
   fit <- getfit(b, posmin=posmin, maxh=maxh, xshift=xshift,
-                fun=fun, s.fix=s.fix, sig=sig)
-  if(inherits(fit$fit, "try-error")){
+                fun=fun, s.fix=s.fix, sig=sig, fitit=fitit)
+  if(!fitit || inherits(fit$fit, "try-error")){
     b <- fit$x
     bm <- 1.05*max(b$new.cases, na.rm=TRUE)
     popmill <- round(sum(popdata$population[match(unique(c(reg, regname)), popdata$name)], na.rm=TRUE)/1e6)
@@ -218,7 +220,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
   ndeaths <- ndeaths.p +
     sum(pred$pred, na.rm=TRUE)*cfr
   
-  if(!inherits(fit$confval, "try-error") && !reg%in%bad.reg){
+  if(!inherits(fit$confval, "try-error") && !reg%in%bad.reg && !any(is.na(fit$confval))){
     #mode of log normal is 
     mode.lims <- sort(round(exp(fit$confval[1,]-fit$confval[2,]^2)))
     df <- data.frame(x=b$date[1]+day1+mode.lims-xshift-1, y=c(bm,bm))
@@ -289,9 +291,9 @@ for(i in c("Hubei China")){
 # European Countries
 
 ```{r worldplotfun}
-worldplot <- function(reg, posmin=100, maxh=150){
+worldplot <- function(reg, posmin=100, maxh=150, fitit=TRUE){
 popmill <- round(sum(worldpop$PopTotal[match(reg, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
-p <- myfun(world, reg, posmin=posmin, maxh=maxh)
+p <- myfun(world, reg, posmin=posmin, maxh=maxh, fitit=fitit)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
@@ -399,9 +401,9 @@ for(i in c("Russia", "Ukraine", "Belarus")){
 }
 ```
 
-```{r  Asia-forecast, eval=FALSE}
+```{r  Asia-forecast}
 for(i in c("Japan", "India", "Pakistan")){
-  worldplot(i)
+  worldplot(i, fitit=FALSE)
 }
 ```
 
@@ -413,9 +415,9 @@ for(i in c("US", "Canada")){
 }
 ```
 
-```{r Mex-forecast, eval=FALSE}
+```{r Mex-forecast}
 for(i in c("Mexico")){
-  worldplot(i, posmin=200)
+  worldplot(i, fitit=FALSE)
 }
 ```
 
@@ -423,7 +425,7 @@ for(i in c("Mexico")){
 
 ```{r SAmer-forecast}
 for(i in c("Brazil", "Chile", "Argentina")){
-  worldplot(i, posmin=100)
+  worldplot(i, posmin=100, fitit=FALSE)
 }
 ```
 
@@ -431,10 +433,10 @@ for(i in c("Brazil", "Chile", "Argentina")){
 ## US States
 
 ```{r stateplotfun}
-stateplot <- function(reg, posmin=100, maxh=150){
+stateplot <- function(reg, posmin=100, maxh=150, fitit=TRUE){
 #regfull <- state.name[match(reg, state.abb)]
 popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
-p <- myfun(states, reg, posmin=posmin, maxh=maxh)
+p <- myfun(states, reg, posmin=posmin, maxh=maxh, fitit=fitit)
 # reg2 <- paste(state.name[match(reg, state.abb)], "US")
 # p <- myfun(world, reg2, regname=paste(reg, collapse="+"), posmin=posmin, maxh=maxh)
 if(inherits(p, "list")){
@@ -477,7 +479,7 @@ stateplot(c("IA", "NE"), posmin=10)
 ## South Atlantic North
 
 
-```{r states-forecast-southatlantic}
+```{r states-forecast-usouthatlantic}
 stateplot(c("DC", "DE", "VA", "WV", "MD"))
 ```
 

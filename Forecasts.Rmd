@@ -403,7 +403,7 @@ for(i in c("Russia", "Ukraine", "Belarus")){
 
 ```{r  Asia-forecast}
 for(i in c("Japan", "India", "Pakistan")){
-  worldplot(i, fitit=FALSE)
+  worldplot(i)
 }
 ```
 
@@ -417,7 +417,7 @@ for(i in c("US", "Canada")){
 
 ```{r Mex-forecast}
 for(i in c("Mexico")){
-  worldplot(i, fitit=FALSE)
+  worldplot(i)
 }
 ```
 
@@ -425,7 +425,7 @@ for(i in c("Mexico")){
 
 ```{r SAmer-forecast}
 for(i in c("Brazil", "Chile", "Argentina")){
-  worldplot(i, posmin=100, fitit=FALSE)
+  worldplot(i, posmin=100)
 }
 ```
 
@@ -463,7 +463,7 @@ stateplot(c("NY","NJ","PA"))
 ## East North Central Midwest
 
 ```{r states-forecast-emid}
-stateplot(c("OH", "IN", "IL", "WI", "MI"), posmin=20)
+stateplot(c("OH", "IN", "IL", "WI", "MI"))
 ```
 
 ## West North Central Midwest

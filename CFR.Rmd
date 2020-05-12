@@ -1,5 +1,6 @@
 ---
-title: "CFR"
+title: "Case Fatality Rates (CFR)"
+date: "`r format(Sys.Date(), '%A %b %d, %Y')`"
 ---
   
 ```{r setup, include=FALSE}

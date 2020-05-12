@@ -1,5 +1,6 @@
 ---
 title: "Forecasts version 3"
+date: "`r format(Sys.Date(), '%A %b %d, %Y')`"
 ---
 
 ```{r setup, include=FALSE}

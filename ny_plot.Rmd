@@ -1,5 +1,6 @@
 ---
 title: "NY Plots"
+date: "`r format(Sys.Date(), '%A %b %d, %Y')`"
 ---
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}

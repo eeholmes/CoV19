@@ -1,5 +1,6 @@
 ---
 title: "Lombardy vs WA Plots"
+date: "`r format(Sys.Date(), '%A %b %d, %Y')`"
 ---
 
 ```{r setup, include=FALSE}

@@ -1,6 +1,6 @@
 ---
 title: "Forecasts version 3"
-date: "`r format(Sys.Date(), '%A %b %d, %Y')`"
+date: "`r format(Sys.time(), '%A %b %d, %Y %r')`"
 ---
 
 ```{r setup, include=FALSE}
@@ -709,7 +709,10 @@ for(i in c("CO", "AZ", "UT", "NM", "NV")){
 ### Rockies
 
 ```{r states-forecast-rockies}
-for(i in c("ID", "MT", "WY")){
+for(i in c("ID", "MT")){
   stateplot(i, posmin=10)
+}
+for(i in c("WY")){
+  stateplot(i, posmin=10, fitit=FALSE)
 }
 ```

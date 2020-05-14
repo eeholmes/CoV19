@@ -1,0 +1,23 @@
+---
+title: "Fitting SIR Models"
+date: May 13, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+This is Aaron King (U Michigan's) course on fitting dynamical models to data and focuses on epidemiological models https://kingaa.github.io/clim-dis/. This page is focused on the parameter estimation part
+https://kingaa.github.io/clim-dis/parest/parest.html.
+
+
+## Estimating $R_0$
+
+Aaron King's material talks about estimating $R_0$ from the initial exponential part of the curve. That's pretty straight-forward. Here's a more detailed write up of that which also includes a non-parametric (non-SIR based) approach.
+https://www.sciencedirect.com/science/article/pii/S2468042719300491
+
+## Fitting SIR curves
+
+Many of the European curves are fit somewhat by a smooth curve so I'll try fitting an SIR model to those.  The US state curves do not fit at all. The curves don't look remotely like most of the European curves.
+
+

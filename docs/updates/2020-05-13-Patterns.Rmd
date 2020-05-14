@@ -1,0 +1,22 @@
+---
+title: "Fitting SIR Models"
+date: May 13, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+I have been fitting a log-normal to the new cases curve, which is wrong as the new cases curve in a SIR model is not log-normal. But I wanted something fairly easy to fit with a long-tail and the new case curve coming out of Wuhan looked like a log-normal. I explicitly did not want to fit an SIR model since I was playing around with 'model-free' forecasting. A curve like a gamma distribution pdf or weibull would have worked too. [Finding a good curve](https://www.spcforexcel.com/knowledge/basic-statistics/deciding-which-distribution-fits-your-data-best).
+
+Why didn't I want to an SIR model? 
+
+* I wanted to experiment with a model-free approach. I wanted to see if there are patterns across countries that could be used to inform what the curve might look like in other countries.
+* Since localities were actively imposing mitigations, I didn't think the SIR assumptions would hold at all. The R was changing due to mitigations not reduction of susceptibles. Though you could argue that most of the curve is from post-lockdown, so it is like SIR with a large starting number of infected.
+
+## How this worked and didn't work
+
+Many of the European curves are fit somewhat by a smooth curve (log-normal but the exact shape is not the point) with a really long-tail. The tail is way longer and flatter than in a typical SIR model (I) curve. Why is that? Maybe I should simulate SIR and play around with that some more.
+
+The US state curves do not fit at all. The curves don't look remotely like most of the European curves.
+

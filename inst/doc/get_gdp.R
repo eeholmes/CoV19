@@ -30,7 +30,35 @@ tmp <- FIPS$county[FIPS$state == ""]
 tmp <- str_to_title(tmp)
 FIPS$county[FIPS$state == ""] <- ""
 FIPS$state[FIPS$state == ""] <- tmp
+cname <- str_remove(FIPS$county, " County")
+cname <- str_remove(cname, " Parish")
+cname <- str_replace(cname, "city", "City")
+FIPS$region <- paste(cname, state.name[match(FIPS$state, state.abb)], "US")
+FIPS$region[FIPS$county==""] <- paste(FIPS$state[FIPS$county==""], "US")
 save(FIPS, file="data/FIPS.RData")
 
+
+
 countydata <- read.csv("inst/doc/county_data.csv", stringsAsFactors=FALSE, header=TRUE)
+countyland <- data.frame(fips=countydata$fips, area=countydata$LND110210)
+countyland$fips <- str_replace_all(format(countyland$fips, width=5), " ", "0")
+countyland$region <- FIPS$region[match(countyland$fips, FIPS$fips)]
+
 save(countydata, file="data/countydata.RData")
+
+countypop <- read.csv("inst/doc/CountyPopulationEstimates_2019.csv", stringsAsFactors=FALSE)
+countypop$fips <- str_replace_all(format(countypop$fips, width=5), " ", "0")
+countypop$region <- FIPS$region[match(countypop$fips, FIPS$fips)]
+countypop$population <- as.numeric(str_remove_all(countypop$population, ","))
+countypop$area.sq.mi <- countyland$area[match(countypop$fips, countyland$fips)]
+countypop$density.sq.mi <- countypop$population/countypop$area.sq.mi
+countypop <- na.omit(countypop)
+save(countypop, file="data/countypop.RData")
+
+#add only counties to popdata
+countypop <- countypop[-1*match(paste(state.name, "US"), countypop$region),]
+countypop <- countypop[-1,]
+countypop <- na.omit(countypop)
+df <- data.frame(name=countypop$region, population=countypop$population)
+popdata <- rbind(popdata, df)
+save(popdata, file="data/popdata.RData")

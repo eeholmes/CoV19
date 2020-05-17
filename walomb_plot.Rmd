@@ -12,7 +12,10 @@ library(CoV19)
 ```
 
 ```{r italy_plot, message=FALSE, warning=FALSE}
-my_plot(italy, "Lombardia", "2020-03-10")
+p <- my_plot(italy, "Lombardia", "2020-03-10")
+p + geom_vline(xintercept = as.Date("2020-05-04"), linetype = "dashed") +
+  annotate("text", x=as.Date("2020-05-04")+0.5, y=42000, hjust=0, label="lockdown eased", color="red", size=3, angle=90, vjust=1)
+
 ```
 
 ```{r wa_plot, message=FALSE, warning=FALSE}
@@ -27,6 +30,17 @@ p <- my_plot(x, reg) + xlim(as.Date("2020-03-01"), Sys.Date())
 p <- add_vline(p, "restaurants close", "2020-03-16")
 p <- add_vline(p, "12 days past restaurants closed", "2020-03-28", linetype="dashed")
 p <- add_vline(p, "stay at home order", "2020-03-23")
+p <- add_vline(p, "SIP eased - parks open", "2020-05-08", linetype="dashed")
+p
+```
+
+```{r king_plot, message=FALSE, warning=FALSE}
+reg = "King Washington US"
+p <- my_plot(world, reg) + xlim(as.Date("2020-03-01"), Sys.Date())
+p <- add_vline(p, "restaurants close", "2020-03-16")
+p <- add_vline(p, "12 days past restaurants closed", "2020-03-28", linetype="dashed")
+p <- add_vline(p, "stay at home order", "2020-03-23")
+p <- add_vline(p, "SIP eased - parks open", "2020-05-08", linetype="dashed")
 p
 ```
 

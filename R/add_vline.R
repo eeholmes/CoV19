@@ -9,6 +9,6 @@
 add_vline <- function(p, ltext, ldate, linetype = "solid"){
   ymax <- layer_scales(p)$y$range$range[2]
   p <- p + geom_vline(xintercept = as.Date(ldate), linetype = linetype) +
-    annotate("text", x=as.Date(ldate)+0.5, y=.5*ymax, hjust=0, label=ltext, color="red", size=3, angle=90)
+    annotate("text", x=as.Date(ldate)+0.5, y=.5*ymax, hjust=0, label=ltext, color="red", size=3, angle=90, vjust=1)
   p
 }

@@ -110,6 +110,7 @@ getfit <- function(x, posmin=100, maxh=200, fun="f2", s.fix=0.08, sig=0.05, fiti
   x$x <- log(x$day)
   
   subx <- subset(x, positive>posmin)
+  subx <- na.omit(subx)
   subx$x <- log(subx$day)
   subx$y <- subx$new.cases.smooth*subx$day
   maxy <- max(subx$y, na.rm=TRUE)
@@ -202,8 +203,10 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     b <- fit$x
     bm <- 1.05*max(b$new.cases, na.rm=TRUE)
     popmill <- round(sum(popdata$population[match(unique(c(reg, regname)), popdata$name)], na.rm=TRUE)/1e6)
+    cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
     p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
-      ggtitle(regname) +
+      ggtitle(paste0(regname, "\n", "CFR Est = ",
+                    round(100*cfr,digits=2))) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                    date_labels="%b")
     p <- p + annotate("text", x=mindate+1, y=bm, label=paste(
@@ -218,7 +221,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
   bm <- 1.05*max(b$new.cases.smooth, pred$pred, pred$pred.high, na.rm=TRUE)
   
   p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point(col="grey") + 
-    geom_point(data=subset(fit$subx), col="blue") +
+    geom_point(data=fit$subx, col="blue") +
     geom_line(aes(x=date, y=fitted), data=b) +
     geom_line(aes(x=date, y=pred), data=pred, color="red") +
     ggtitle(regname) +
@@ -271,7 +274,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     
   }
   
-  return(list(p=p, fit=fit$fit, confint=fit$confval, data=b))
+  return(list(p=p, fit=fit$fit, confint=fit$confval, data=b, x=fit$x, subx=fit$subx))
 }
 ```
 
@@ -407,7 +410,7 @@ for(i in c("Romania", "Bulgaria",
 ## Former USSR
 
 ```{r  Russia}
-  worldplot("Russia", fitit=FALSE)
+  worldplot("Russia")
 ```
 
 ```{r  USSR}

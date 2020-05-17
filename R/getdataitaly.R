@@ -1,6 +1,6 @@
 #' Download confirmed, deaths and recovered from Italian CDC
 #' 
-#' Date is posted on the github site daily at about 3pm EST. github/pcm-dpc/COVID-19
+#' Data is posted on the github site daily at about 3pm EST. github/pcm-dpc/COVID-19
 #' 
 #' @return Saves a data frame with region, date, positive, death, recovered, total hospitalized, and ICU to the data folder.
 #' @examples

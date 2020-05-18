@@ -437,7 +437,7 @@ grid.arrange(washington, stateplot("WA"), nrow=1)
 
 Scroll down to the bottom of this page to see state by state data and my projections:
 https://eeholmes.github.io/CoV19/Forecasts.html
-The hot states right now are New Jersey, Massachusetts, Connecticut, Deleware, Maryland, Rhode Island, Illinois and District of Columbia (I know its not a state..) and all have daily new cases of 150 to 200 per million. The IHME model shows all regions out of ICU beds but ok on regular hospital beds except Connecticut: https://covid19.healthdata.org/united-states-of-america. But I haven't seen news reports to that effect so I am dubious if that is true.
+The hot states right now are New Jersey, Massachusetts, Connecticut, Deleware, Maryland, Rhode Island, Illinois and District of Columbia (I know its not a state..) and all have daily new cases of 150 to 200 per million. The IHME model shows all regions out of ICU beds but ok on regular hospital beds except Connecticut: https://covid19.healthdata.org/united-states-of-america. But news reports say otherwise (i.e. they are are not overwhelmed).
 
 ## Regional trends
 

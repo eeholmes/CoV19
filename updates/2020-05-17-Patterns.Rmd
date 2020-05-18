@@ -346,9 +346,9 @@ This is an update to my regional patterns post 10 days ago: https://eeholmes.git
 
 # Europe
 
-Pattern hasn't really changed in the last two weeks. Most of Europe had an effective lockdown and the epidemic curves look like there will be low rates by early June. Most countries should be below 1 death per million per day by June, and a few countries are well below that or never reached that level at all: Germany, Switzerland, Austria, Norway, all of Eastern Europe. The death rates per million vary from 1900-600 for countries that took a slower pace of lockdown to under 100 deaths per million for countries that locked down early and stopped transmission effectively.
+Pattern hasn't really changed in the last two weeks. Most of Europe went into lockdown and the epidemic curves look like there will be low new cases per day by early June. Most countries should be below 1 death per million per day (the dashed line) by June, and a few countries are well below that or never reached that level at all: Germany, Switzerland, Austria, Norway, all of Eastern Europe. My projected total death rates per million (by Sept 1) vary from 1900-600 for countries that took a slower pace of lockdown to under 100 deaths per million for countries that locked down early and stopped transmission effectively.
 
-The big exceptions are Sweden and UK. Sweden did a soft lockdown and while its deaths never spiked, they steady at an average of ca 6 per million per day. They are now at 6th highest deaths per million and Europe and should pass France in another week. My projections put them at the top of that list by Sept 1, but that's a long ways away. The UK delayed their lockdown and deaths per million are also up around 6 (like Sweden) but dropping fast. They are relaxing their lockdown a bit earlier (in terms of deaths per million per day and new cases per million per day) than other European countries.
+The big exceptions are Sweden and UK. Sweden did a soft lockdown and while its deaths never spiked, their new deaths per day remains steady at an average of ca 6 deaths per million (people) per day. They are now at 6th highest total deaths per million in Europe and should pass France in another week. My projections put them at the top of that list (total deaths per million) by Sept 1, but that's a long ways away. The UK delayed their lockdown and their current daily deaths per million are also up around 6 (like Sweden) but dropping fast. They are relaxing their lockdown a bit earlier (in terms of deaths per million per day and new cases per million per day) than other European countries.
 
 The CFRs (case fatality rates) across western Europe are 12-20% with lower rates in central and eastern Europe (3-5%). Portugal is a bit of an exception with a CFR of 4.5% versus Spain which is 12.3%. These differences could be caused by different testing strategies, and that's certainly true for Germany which had high testing levels (tested more people who were not very sick). Most other countries focused on testing people who showed up at hospitals (so quite sick). There is also speculation that the BCG tuberculosis vaccine might be causing some of the differences in spread and CFR in European countries. The BCG vaccine is known to confer protection against repiratory infections and the TB vaccine is part of the normal vaccinnation schedule across eastern Europe and Portugal, but not Spain and not Italy.
 https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)31025-4/fulltext
@@ -357,7 +357,7 @@ https://www.euronews.com/2020/04/06/has-the-key-to-a-coronoavirus-vaccine-been-s
 
 ## Regions and countries with high spread and lockdown
 
-Death rates 1900 to 600 per million people. Lockdown after widespread spread or lockdown insufficient.
+Projected total death rates of 1900 to 600 per million people. "Est Deaths" means projected total deaths by Sept 1.
 
 ```{r}
 grid.arrange(lomb, belgium, spain, italyp)
@@ -365,7 +365,7 @@ grid.arrange(lomb, belgium, spain, italyp)
 
 ## Regions with intermediate levels of infection
 
-These are cases where new cases/million went over 50-100, but lockdown was effective and stopped the rise and lowered infection rate. Death rate 500 to 150 per million.
+These are cases where new cases/million went up to 50-100, but lockdown was effective and stopped the rise and lowered infection rate. Projected total deaths of 500 to 150 per million.
 
 ```{r}
 grid.arrange(france, netherlands, switzerland, portugal)
@@ -373,7 +373,7 @@ grid.arrange(france, netherlands, switzerland, portugal)
 
 ## Regions with very early lockdown. Low spread.
 
-Death rate below 100 per million.
+Projected total deaths below 100 per million.
 
 ```{r}
 grid.arrange(germany, austria, norway, czechia)
@@ -388,11 +388,11 @@ grid.arrange(sweden, uk, nrow=1)
 
 # United States
 
-10 days ago, there was no sign of the peak. Most regions were still going up. 10 days later, most regions show a peak. Currently only the western south region (TX+OK+KS+AR). The CFR in that region is quite low (3.56%) suggesting that most of these infections are in the meat processing industry. There is a regional outbreak in north TX and southwest KS in the plants. These are younger people, so less mortality, and there is more testing of people with less severe symptoms (so not as sick). In other regions, the outbreaks associated with meat processing have peaked in 2-4 weeks, so I would expect that we'll see the same in TX.
+10 days ago, there was no sign of a peak in the new cases. Most regions were still going up. 10 days later, most regions show a peak. Currently only the western south region (TX+OK+KS+AR) does not. The CFR in that region is quite low (3.56%) suggesting that most of these infections are in the meat processing industry. There is a regional outbreak in north TX and southwest KS in the plants (see cluster of big bubbles in the map below). These are younger people, so less mortality, and there is more testing of people with less severe symptoms (so not as sick). In other regions, the outbreaks associated with meat processing have peaked in 2-4 weeks, so I would expect that we'll see the same in TX.
+
+![Bubble map of cases per 100k people by County from Wash Post](cases_per_100k_US.png)
 
 CFRs across the US are lower than in Europe. 3.5 to 7% versus 12-20%. This suggests that testing strategies in the US states is different (people who are less sick get tested) or that death reporting is different (i.e. under-reporting relative to Europe). I have not come across any analysis of what is causing this difference.
-
-
 
 ```{r stateplotfun}
 stateplot <- function(reg, posmin=100, maxh=150, fitit=TRUE, data=states){
@@ -409,21 +409,39 @@ if(inherits(p, "list")){
 }
 ```
 
-New England and the Mid-Atlantic continue to look a lot like Europe, at least like the European countries that have a high fraction infected (UK, Belgium, Spain). The cases have continued to steadily drop over the last 10 days. Projected reported death rates are looking like they'll be close to 1000 per million and the curve is similar to what has been seen in Europe. If the curve continues, then deaths should be about 2 per million per day (which is low) by June to mid-June. 
+New England and the Mid-Atlantic continue to look a lot like Europe, at least like the European countries that have a high fraction infected (UK, Belgium, Spain). The cases have continued to steadily drop over the last 10 days. Projected reported total deaths per million are looking like they'll be close to 1000 per million and the curve is similar to what has been seen in Europe, meaning long slowly declining tail. If the curve continues, then the daily death rate should be about 2 deaths per million per day (which is low) by June to mid-June.
 
-The same looks to be the case for Florida, the biggest state and state economy to drive its cases down like the northeast, but without the spike. The daily new cases per million peaked at 50 and they are already near deaths of 1 per million per day. If trends continue, Florida looks to come out best of the big states; there are many smaller states that will have fewer deaths per million but Florida is a large state and the 4th largest economy. For comparison to the European countries I've been following, the Florida economy is similar to Spain. Compared to European countries, Florida's projected deaths/million (per my projections) is 170 deaths/million similar to Portugal and much better than all the other big European countries except Germany. The danger however is that Georgia is to the north, and Georgia is the worst off state in the south with high cases/million and death/million across the whole state. Florida is also a big tourist destination for the northeast where infection rates are still high.
+```{r states-forecast-new-england-midatlantic, fig.height=3.5}
+newengland <- stateplot(c("ME","VT","NH","MA","RI","CT"))
+midatlantic <- stateplot(c("NY","NJ","PA"))
+grid.arrange(newengland, midatlantic, nrow=1)
+```
+
+The same looks to be the case for Florida, the biggest state and state economy to drive its cases down like the northeast, but without the spike. The daily new cases per million peaked at 50 and they are already near daily deaths of 1 per million per day. If trends continue, Florida looks to come out best of the big states; there are many smaller states that will have fewer deaths per million but Florida is a large state and the 4th largest economy. For comparison to the European countries I've been following, the Florida economy is similar to Spain. Compared to European countries, Florida's projected total deaths/million (per my projections) is 170 deaths/million similar to Portugal and much better than all the other big European countries except Germany. The danger however is that Georgia is to the north, and they have high cases/million and deaths/million across the whole state. Notice the much larger numbers on the right y-axis and the 2x larger expected deaths per million for Georgia. Florida is also a big tourist destination for the northeast where infection rates are still high.
+
+```{r states-forecast-fl-ga-al-ms}
+grid.arrange(stateplot("FL"), stateplot("AL"), stateplot("GA"), stateplot("MS"))
+```
+
+The four southern states of Mississippi, Alabama, Florida, and Georgia are an interesting case. The figure below shows a bubble map of the cases per 100k people by county (from Washington Post). You can see the SW Georgia outbreak. This was a rural community spread outbreak not associated with meat processing plants or nursing homes (unlike most other rural outbreaks). But notice that there are cases all over Georgia. Compare to Alabama to the west and north Florida to the south. Georgia is riddled with infections. Their CFR is similar to Florida and Alabama so it's not a case of higher testing. Alabama to the west was following a more cautious approach than Georgia. Alabama closed non-essential businesses at the end of March and re-opened end of April, while Georgia never fully implemented business closures. Cases per 100k are much lower across Alabama compared to Georgia.
+
+![Georgia Cases per 100k people by County](`r file.path(here::here(), "docs", "updates", "georgia.png")`){ width=50% }
+
 
 My home county, King County Washington, was an early epicenter but cases are going down steady. Hopefully the new cases keep dropping as people begin emerging from shelter-in-place. In Washington state as a whole, there was a peak due to outbreaks in Yakima (agriculture) and tri-cities (nursing homes) but that seems to be on the downturn.
 
-```{r states-forecast-new-england-midatlantic}
-newengland <- stateplot(c("ME","VT","NH","MA","RI","CT"))
-midatlantic <- stateplot(c("NY","NJ","PA"))
+```{r states-forecast-wa, fig.height=3.5}
 washington <- stateplot("King Washington US", data=world)
-florida <- stateplot("FL")
-grid.arrange(newengland, midatlantic, washington, florida)
+grid.arrange(washington, stateplot("WA"), nrow=1)
 ```
 
-Across the US, the new case curves (7-day average) show a peak about a week ago. It is entirely possible that this is a bump and new cases will start back up. We have definitely seen that happen a few times. 
+Scroll down to the bottom of this page to see state by state data and my projections:
+https://eeholmes.github.io/CoV19/Forecasts.html
+The hot states right now are New Jersey, Massachusetts, Connecticut, Deleware, Maryland, Rhode Island, Illinois and District of Columbia (I know its not a state..) and all have daily new cases of 150 to 200 per million. The IHME model shows all regions out of ICU beds but ok on regular hospital beds except Connecticut: https://covid19.healthdata.org/united-states-of-america. But I haven't seen news reports to that effect so I am dubious if that is true.
+
+## Regional trends
+
+Across the US, the new case curves (7-day average) show a peak about a week ago. It is entirely possible that this is a bump and new cases will start back up as states emerge from shelter in place. We have definitely seen that happen a few times. However, we have also seen that countries in Europe have been lifting their lockdowns without cases starting to increase again. 
 
 ```{r states-forecast-westnosocal}
 reg <- c("San Diego California US",
@@ -486,12 +504,17 @@ grid.arrange(midwest1, midwest2, southatlantic, eastsouth)
 ```
 
 ```{r states-forecast-sw}
-mtnwest <- stateplot(c("CO", "UT", "NV", "NM", "AZ"))
+mtnwest <- stateplot(c("CO", "UT", "NM", "AZ"))
 southcentral <- stateplot(c("TX", "OK", "KS", "AR"))
 grid.arrange(mtnwest, southcentral, northwest, socal)
 ```
 
-10 days ago, as cases were still climbing across multiple regions in the US, it looked like some regions might get into the 300+ new cases per million level that swamped the New York City and New Orleans hospitals. Right now, the new cases have stopped climbing and new cases are dropping. 
+```{r states-forecast-others}
+mtnnorth <- stateplot(c("ID", "MT", "WY"))
+grid.arrange(mtnnorth, stateplot("HI"), stateplot("NV"), stateplot("AK"))
+```
+
+10 days ago, as cases were still climbing across multiple regions in the US, it looked like some regions might get into the 300+ new cases per million level that swamped the New York City and New Orleans hospitals. Right now, the new cases have stopped climbing and new cases are dropping. Only New England and the DC+VA+MD region is over 100 new cases per million as of today. WA+OR+NorCal and FL are the 
 
 
 ## Summary 

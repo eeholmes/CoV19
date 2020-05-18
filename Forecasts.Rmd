@@ -109,7 +109,7 @@ getfit <- function(x, posmin=100, maxh=200, fun="f2", s.fix=0.08, sig=0.05, fiti
   x$day <- 1:nrow(x) - day1 + 1
   x$x <- log(x$day)
   
-  subx <- subset(x, positive>posmin)
+  subx <- subset(x, positive>posmin)[,c("date", "positive", "region", "new.cases", "new.cases.smooth", "day", "x")]
   subx <- na.omit(subx)
   subx$x <- log(subx$day)
   subx$y <- subx$new.cases.smooth*subx$day
@@ -716,6 +716,6 @@ for(i in c("ID", "MT")){
   stateplot(i, posmin=10)
 }
 for(i in c("WY")){
-  stateplot(i, posmin=10, fitit=FALSE)
+  stateplot(i, posmin=10)
 }
 ```

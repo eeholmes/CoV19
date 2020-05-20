@@ -424,15 +424,20 @@ grid.arrange(stateplot("FL"), stateplot("AL"), stateplot("GA"), stateplot("MS"))
 ```
 
 The four southern states of Mississippi, Alabama, Florida, and Georgia are an interesting case. The figure below shows a bubble map of the cases per 100k people by county (from Washington Post). You can see the SW Georgia outbreak. This was a rural community spread outbreak not associated with meat processing plants or nursing homes (unlike most other rural outbreaks). But notice that there are cases all over Georgia. Compare to Alabama to the west and north Florida to the south. Georgia is riddled with infections. Their CFR is similar to Florida and Alabama so it's not a case of higher testing. Alabama to the west was following a more cautious approach than Georgia. Alabama closed non-essential businesses at the end of March and re-opened end of April, while Georgia never fully implemented business closures. Cases per 100k are much lower across Alabama compared to Georgia.
+
 ![Georgia Cases per 100k people by County](`r file.path(here::here(), "docs", "updates", "georgia.png")`){ width=50% }
 
 
 My home county, King County Washington, was an early epicenter but cases are going down steady. Hopefully the new cases keep dropping as people begin emerging from shelter-in-place. In Washington state as a whole, there was a peak due to outbreaks in Yakima (agriculture) and tri-cities (nursing homes) but that seems to be on the downturn.
 
-```{r states-forecast-wa}
+```{r states-forecast-wa, fig.height=3.5}
 washington <- stateplot("King Washington US", data=world)
 grid.arrange(washington, stateplot("WA"), nrow=1)
 ```
+
+Scroll down to the bottom of this page to see state by state data and my projections:
+https://eeholmes.github.io/CoV19/Forecasts.html
+The hot states right now are New Jersey, Massachusetts, Connecticut, Deleware, Maryland, Rhode Island, Illinois and District of Columbia (I know its not a state..) and all have daily new cases of 150 to 200 per million. The IHME model shows all regions out of ICU beds but ok on regular hospital beds except Connecticut: https://covid19.healthdata.org/united-states-of-america. But news reports say otherwise (i.e. they are are not overwhelmed).
 
 ## Regional trends
 

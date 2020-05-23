@@ -455,8 +455,8 @@ stateplot <- function(reg, posmin=100, maxh=150, fitit=TRUE){
 #regfull <- state.name[match(reg, state.abb)]
 popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
 p <- myfun(states, reg, posmin=posmin, maxh=maxh, fitit=fitit)
-# reg2 <- paste(state.name[match(reg, state.abb)], "US")
-# p <- myfun(world, reg2, regname=paste(reg, collapse="+"), posmin=posmin, maxh=maxh)
+reg2 <- paste(c(state.name, "District of Columbia")[match(reg, c(state.abb, "DC"))], "US")
+p <- myfun(world, reg2, regname=paste(reg, collapse="+"), posmin=posmin, maxh=maxh)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))

@@ -62,7 +62,7 @@ getdataworld <- function(){
     world <- rbind(world, x)
     }
     # Create merged set for states
-    for(reg in paste(state.name, "US")){
+    for(reg in paste(c(state.name, "District of Columbia"), "US")){
       x <- world %>% 
         subset(stringr::str_detect(region, reg) & !(region==reg)) %>%
         dplyr::group_by(date) %>%

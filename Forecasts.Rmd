@@ -212,7 +212,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     p <- p + annotate("text", x=mindate+1, y=bm, label=paste(
       "\nDeaths to date\n", max(b$death, na.rm=TRUE), " ", 
       round(max(b$death, na.rm=TRUE)/(popmill*1000), digits=2), "per thousand"), hjust=0)
-    return(list(p=p))
+    return(list(p=p, cfr=cfr))
   }
   
   # updated with fitted
@@ -274,7 +274,7 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     
   }
   
-  return(list(p=p, fit=fit$fit, confint=fit$confval, data=b, x=fit$x, subx=fit$subx))
+  return(list(p=p, fit=fit$fit, confint=fit$confval, data=b, x=fit$x, subx=fit$subx, cfr=cfr))
 }
 ```
 
@@ -450,15 +450,22 @@ for(i in c("Brazil", "Chile", "Argentina")){
 
 ## US States
 
+I have added a couple reference lines to the state plots. The average deaths per year in the US (all age groups) is roughly 10,000 per million (roughly 1% of population per year), obviously it higher in some states than others but for now I am not downloading the state by state info on that. 
+
+That translates to `10000 x pop size in millions / 365` deaths per million per day. I can translate new cases per million per day into future deaths per day using CFR. I put reference lines of 5% of normal deaths per million per day. Note Covid-19 deaths are heavily skewed to those over 70 and deaths rates for that age group is 2-4 times higher than the all-age groups rate. However, the denominator (millions of people age 70+) is even smaller, so actually if I tranlated this just to focus on those age 70+, it would look even worse.  Meaning the Covid-19 death rate relative to normal death rate would be higher. 
+
 ```{r stateplotfun}
 stateplot <- function(reg, posmin=100, maxh=150, fitit=TRUE){
 #regfull <- state.name[match(reg, state.abb)]
 popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
-p <- myfun(states, reg, posmin=posmin, maxh=maxh, fitit=fitit)
+#p <- myfun(states, reg, posmin=posmin, maxh=maxh, fitit=fitit)
 reg2 <- paste(c(state.name, "District of Columbia")[match(reg, c(state.abb, "DC"))], "US")
 p <- myfun(world, reg2, regname=paste(reg, collapse="+"), posmin=posmin, maxh=maxh)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  onetoone <- ((10000*popmill/365)/(p$cfr))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
  plot(p$p)
 }
@@ -517,15 +524,10 @@ stateplot(c("AL", "MS", "KY", "TN"), posmin=100)
 
 ## West South Central
 
+The early peak is the New Orleans outbreak.
+
 ```{r states-forecast-westsouth}
-stateplot(c("TX", "OK", "AR"))
-```
-
-Louisiana is odd given their early outbreak so I am leaving them out.
-
-```{r states-forecast-LA}
-p <- myfun(states, c("LA"), posmin=100, maxh=150)
-if(inherits(p, "list")) plot(p$p)
+stateplot(c("TX", "OK", "AR","LA"))
 ```
 
 ## Mountain North
@@ -565,6 +567,9 @@ popmill <- round(popmill/1e6, digits=2)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  onetoone <- ((10000*popmill/365)/(p$cfr))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
 plot(p$p)
 }
 ```
@@ -586,6 +591,8 @@ if(inherits(p, "list")){
 popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   plot(p$p)
 }
 ```
@@ -672,8 +679,9 @@ if(inherits(p, "list")){
   popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   plot(p$p)
-
 }
 ```
 
@@ -688,8 +696,9 @@ if(inherits(p, "list")){
   popmill <- round(0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   plot(p$p)
-
 }
 ```
 
@@ -712,10 +721,7 @@ for(i in c("CO", "AZ", "UT", "NM", "NV")){
 ### Rockies
 
 ```{r states-forecast-rockies}
-for(i in c("ID", "MT")){
-  stateplot(i, posmin=10)
-}
-for(i in c("WY")){
+for(i in c("ID", "MT", "WY")){
   stateplot(i, posmin=10)
 }
 ```

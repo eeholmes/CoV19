@@ -1,6 +1,7 @@
 ---
 title: "Changing CFR"
 date: "`r format(Sys.time(), '%A %b %d, %Y')`"
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +27,7 @@ tmpfun<- function(data, reg){
 lag <- 7
 df <- data.frame(date=a$date[lag:nrow(a)],
                  cfr=zoo::rollapply(a$death,3,mean)[lag:nrow(a)]/zoo::rollapply(a$positive,3,mean)[1:(nrow(a)-lag+1)], region="WA")
-p <- ggplot(df, aes(x=date, y=cfr)) + geom_point() + ylim(0,.2) + xlim(as.Date("2020-03-15"), Sys.Date()) + ylab("7-day lag CFR") +
+p <- ggplot(df, aes(x=date, y=cfr)) + geom_point() + ylim(0,.2) + xlim(as.Date("2020-03-15"), thedate) + ylab("7-day lag CFR") +
   ggtitle(paste0(reg))
 return(p)
 }

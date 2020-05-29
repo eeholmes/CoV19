@@ -303,7 +303,7 @@ if(inherits(p, "list")){
 ```
 
 
-```{r states-forecast-new-england-midatlantic, fig.height=3.5}
+```{r states-forecast-new-england-midatlantic}
 newengland <- stateplot(c("ME","VT","NH","MA","RI","CT"))
 midatlantic <- stateplot(c("NY","NJ","PA"))
 midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))

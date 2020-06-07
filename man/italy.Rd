@@ -4,7 +4,8 @@
 \name{italy}
 \alias{italy}
 \title{Italy coronavirus data}
-\format{A data frame with 7 variables:
+\format{
+A data frame with 7 variables:
 \describe{
   \item{date}{date. Data is for the previous day.}
   \item{region}{Province.}
@@ -13,7 +14,8 @@
   \item{death}{Cumulative deaths aka deceduti}
   \item{recovered}{Cumulative recovered}
   \item{ICU}{Current number in ICU. aka terapia_intensiva}
-}}
+}
+}
 \usage{
 italy
 }

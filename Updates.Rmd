@@ -4,6 +4,7 @@ title: "Updates"
 
 An applied mathematician's pandemic diary. 
 
+* June 10, 2020 [Regional Patterns](updates/2020-06-10-Patterns.html)
 * May 25, 2020 [Regional Patterns](updates/2020-05-25-Patterns.html)
 * May 17, 2020 [Regional Patterns](updates/2020-05-17-Patterns.html)
 * May 6, 2020 [7-day CFR Trends](updates/2020-05-06-Changing-CFR.html)

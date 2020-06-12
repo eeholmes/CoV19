@@ -303,7 +303,7 @@ southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
 grid.arrange(newengland, midatlantic, midwest1, southatlantic, nrow=2)
 ```
 
-Two weeks ago, I was watching South Dakota, Mississippi, Minnesota and Illinois. The 3 midwest states are trending downward. There is no sign of an uptick in cases in MN from the protests (nor in NYC, PA, DC). Maybe masks and being outdoors drastically reduced transmission? There is an uptick in MI, but it looks like it might be a one day increase such as happens when a bunch of back-logged cases are released. We'll know in a few days.
+Two weeks ago, I was watching South Dakota, Mississippi, Minnesota and Illinois. The 3 midwest states are trending downward. There is no sign of an uptick in cases in MN from the protests (nor in NYC, PA, DC). Maybe masks and being outdoors drastically reduced transmission? There is an uptick in MI, but it looks like it might be a one day increase such as happens when a bunch of back-logged cases are released. We'll know in a few days. Something is odd in SD. The death rate is very high 17 CFR which is 3-4x higher than other states.
 
 ```{r states-forecast-sd-ms-mn-il}
 grid.arrange(stateplot("SD"), stateplot("MI"), stateplot("MN"), stateplot("IL"))

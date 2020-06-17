@@ -161,7 +161,7 @@ The previous plots highlighted those states that are getting into the levels whe
 
 ```{r}
 # new cases per day at max
-subb <- subset(bb, current.smooth==max.smooth)
+subb <- subset(bb, current.smooth>.95*max.smooth)
 subb$march.smooth <- subb$march.smooth/subb$popmill
 subb$april.smooth <- subb$april.smooth/subb$popmill
 subb$current.smooth <- subb$current.smooth/subb$popmill

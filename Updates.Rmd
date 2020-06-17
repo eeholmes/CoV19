@@ -4,6 +4,7 @@ title: "Updates"
 
 An applied mathematician's pandemic diary. 
 
+* June 17, 2020 [Cases Going Up](updates/2020-06-17-Going-Up.html)
 * June 10, 2020 [Regional Patterns](updates/2020-06-10-Patterns.html)
 * May 25, 2020 [Regional Patterns](updates/2020-05-25-Patterns.html)
 * May 17, 2020 [Regional Patterns](updates/2020-05-17-Patterns.html)

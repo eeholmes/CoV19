@@ -1,0 +1,263 @@
+---
+title: "Cases going up"
+date: June 17, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r child=file.path(here::here(), "updates/Forecast-Functions-2.Rmd")}
+```
+
+Previous entries: https://eeholmes.github.io/CoV19/Updates.html
+
+
+
+```{r states-forecast-new-england-midatlantic}
+newengland <- stateplot(c("ME","VT","NH","MA","RI","CT"))
+midatlantic <- stateplot(c("NY","NJ","PA"))
+midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))
+southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
+grid.arrange(newengland, midatlantic, midwest1, southatlantic, nrow=2)
+```
+
+Two weeks ago, I was watching South Dakota, Mississippi, Minnesota and Illinois. The 3 midwest states are trending downward. There is no sign of an uptick in cases in MN from the protests (nor in NYC, PA, DC). Maybe masks and being outdoors drastically reduced transmission? There is an uptick in MI, but it looks like it might be a one day increase such as happens when a bunch of back-logged cases are released. We'll know in a few days. Something is odd in SD. The death rate is very high 17 CFR which is 3-4x higher than other states.
+
+```{r states-forecast-sd-ms-mn-il}
+grid.arrange(stateplot("SD"), stateplot("MI"), stateplot("MN"), stateplot("IL"))
+```
+
+There is still a lot of discussion and worry about the southern states, and new cases are still high and increasing in Florida. However overall the south is not seeing a surge in cases like we saw in the northeast in the early part of the epidemic.. 
+
+```{r states-forecast-fl-ga-al-ms}
+grid.arrange(stateplot("FL"), stateplot("AL"), stateplot("GA"), stateplot("MS"))
+```
+
+
+In my home state, Washington, we been having an increases in cases. Mainly it's the Yakima outbreak and Tri-Cities outbreaks which are still going up. The case load in Yakima is crazy high, 600 per million per day. The death rate is low (2.84 CFR); this is in a the agricultural industry in the region and the infected tend to be younger in those cases. However I am surprised that there hasn't been more press about the hospital system and how they are coping.
+
+```{r states-forecast-wa}
+reg <- "King Washington US"
+king <- worldplot(reg)
+reg <- "Yakima Washington US"
+yakima <- worldplot(reg)
+reg <- c("Benton Washington US", "Franklin Washington US")
+benton <- worldplot(reg)
+
+grid.arrange(stateplot("WA"), king, yakima, benton, nrow=2)
+```
+
+
+## Regional trends
+
+Note: scroll down to the bottom of this page to see state by state data:
+https://eeholmes.github.io/CoV19/Forecasts.html
+
+Take home is that across the US, the new case curves (7-day average) continue to show a downward trend at the regional level across the northeast, even as states start to open up and despite the on-going protests. However in the southwest, the cases are increasing and at least one state (Arizona) is getting above the critical 150 new cases per million level.
+
+```{r states-forecast-westnosocal}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+cacounties <- unique(world$region[str_detect(world$region, "California")])
+ncacounties <- cacounties[!cacounties %in% reg & 
+                            !cacounties=="California US" & 
+                            !cacounties=="Out of CA California US" &
+                            !cacounties=="Unassigned California US"]
+ncacounties <- as.character(ncacounties)
+p <- myfun(world, ncacounties, regname="NorCal", posmin=100, maxh=150)
+popmill <- 0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]
+popmill <- round(popmill/1e6, digits=2)
+if(inherits(p, "list")){
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  onetoone <- (10000*popmill/365)/(p$cfr)
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
+  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+northwest <- p$p
+}
+```
+
+
+```{r states-forecast-southca}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
+if(inherits(p, "list")){
+popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  onetoone <- ((10000*popmill/365)/(p$cfr))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
+  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
+  socal <- p$p
+}
+```
+
+
+
+```{r states-forecast-emid}
+midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))
+midwest2 <- stateplot(c("MN", "MO", "ND", "SD", "IA", "NE"))
+southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
+eastsouth <- stateplot(c("AL", "MS", "GA", "NC","SC"))
+grid.arrange(midwest1, midwest2, southatlantic, eastsouth)
+```
+
+```{r states-forecast-sw}
+mtnwest <- stateplot(c("CO", "UT", "NM", "AZ","NV"))
+southcentral <- stateplot(c("TX", "OK", "KS", "AR"))
+grid.arrange(mtnwest, southcentral, northwest, socal)
+```
+
+```{r states-forecast-others}
+mtnnorth <- stateplot(c("ID", "MT", "WY"))
+grid.arrange(mtnnorth, stateplot("HI"), stateplot(c("WA", "OR")), stateplot("AK"))
+```
+
+```{r}
+getsmooth <- function(data, names){
+  fil <- 7
+b <- data[data$region %in% names,]
+b$new.cases <- unlist(tapply(b$positive, b$region, function(x){c(NA, diff(x))}))
+b$new.cases[b$new.cases<0] <- NA
+b$smooth.new.cases <- unlist(tapply(b$new.cases, b$region, function(x){stats::filter(x, rep(1/fil,fil))}))
+b$new.deaths <- unlist(tapply(b$death, b$region, function(x){c(NA, diff(x))}))
+b$new.deaths[b$new.deaths<0] <- NA
+b$smooth.new.deaths <- unlist(tapply(b$new.deaths, b$region, function(x){stats::filter(x, rep(1/fil,fil))}))
+
+popmill <- popdata[match(names, popdata$name),]$population/1000000
+max.smooth <- tapply(b$smooth.new.cases, b$region, max, na.rm=TRUE)
+max.smooth <- max.smooth[match(names, names(max.smooth))]
+current.smooth <- tapply(b$smooth.new.cases, b$region, function(x){x[max(which(!is.na(x)))]})
+current.smooth <- current.smooth[match(names, names(current.smooth))]
+
+subb <- b[format(b$date, "%b")=="Mar",]
+march.smooth <- tapply(subb$new.cases, subb$region, function(x){mean(x, na.rm=TRUE)})
+march.smooth <- march.smooth[match(names, names(march.smooth))]
+
+subb <- b[format(b$date, "%b")=="Apr",]
+april.smooth <- tapply(subb$new.cases, subb$region, function(x){mean(x, na.rm=TRUE)})
+april.smooth <- april.smooth[match(names, names(april.smooth))]
+
+max.smooth.death <- tapply(b$smooth.new.deaths, b$region, max, na.rm=TRUE)
+max.smooth.death <- max.smooth.death[match(names, names(max.smooth.death))]
+current.smooth.death <- tapply(b$smooth.new.deaths, b$region, function(x){x[max(which(!is.na(x)))]})
+current.smooth.death <- current.smooth.death[match(names, names(current.smooth.death))]
+
+smooth=data.frame(current.smooth, max.smooth, current.smooth.death, max.smooth.death, march.smooth, april.smooth, region=names, popmill=popmill)
+
+return(smooth)
+}
+```
+
+```{r}
+bb <- getsmooth(states, state.abb)
+eub <- getsmooth(world, eu)
+
+subb <- subset(bb, current.smooth.per.mill>100)
+subb <- subb[order(subb$current.smooth.per.mill),]
+barplot(sort(subb$current.smooth.per.mill), names.arg=subb$region)
+title("Currently with new cases per million > 100 per day")
+
+subb <- subset(bb, current.smooth.per.mill>100)
+subb <- subb[order(subb$current.smooth.per.mill),]
+ggplot(data=subb, aes(x=region, y=current.smooth.per.mill)) +
+  geom_bar(stat="identity", width=0.5) + xlab("") +
+  ggtitle("Currently at maximum new cases per day")
+
+subb <- subset(bb, current.smooth==max.smooth)
+ggplot(data=subb, aes(x=region, y=max.smooth.per.mill)) +
+  geom_bar(stat="identity", width=0.5) + xlab("") +
+  ggtitle("Currently at maximum new cases per day")
+
+subb <- subset(bb, current.smooth==max.smooth)
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region=="NY",], fill="red"))
+ggplot(data=subb, aes(x=region, y=max.smooth.death/popmill, fill=fill)) +
+  geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
+  xlab("") +
+  ylab("Deaths per day per million") +
+  ggtitle("Currently at maximum new cases per day")
+
+subb <- subset(bb, current.smooth==max.smooth)
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+ggplot(data=subb, aes(x=region, y=max.smooth/popmill, fill=fill)) +
+  geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
+  xlab("") +
+  ylab("New cases per day per million") +
+  ggtitle("Currently at maximum new cases per day (averaged over 7 days)")
+
+
+subb <- rbind(bb, eub)
+subb <- subset(subb, max.smooth.death/popmill > 10)
+ggplot(data=subb, aes(x=region, y=max.smooth.death/popmill)) +
+  geom_bar(stat="identity", width=0.5) + xlab("") +
+  coord_flip() +
+  ggtitle("Max per day deaths per million (averaged over 7 days)")
+  
+# new cases per day > 100
+subb <- subset(bb, current.smooth>april.smooth & current.smooth/popmill > 100)
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+subb$march.smooth <- subb$march.smooth/subb$popmill
+subb$april.smooth <- subb$april.smooth/subb$popmill
+subb$current.smooth <- subb$current.smooth/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "april.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("march.smooth","april.smooth", "current.smooth"), labels=c("March", "April", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge')
+
+# new cases per day at max
+subb <- subset(bb, current.smooth==max.smooth)
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+subb$march.smooth <- subb$march.smooth/subb$popmill
+subb$april.smooth <- subb$april.smooth/subb$popmill
+subb$current.smooth <- subb$current.smooth/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "april.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("march.smooth","april.smooth", "current.smooth"), labels=c("March", "April", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ggtitle("States currently at max new cases per day + NY, NJ, MA for comparison")
+
+# new england
+subb <- subset(bb, current.smooth<april.smooth & april.smooth/popmill>100 & current.smooth/popmill<75)
+subb$march.smooth <- subb$march.smooth/subb$popmill
+subb$max.smooth <- subb$max.smooth/subb$popmill
+subb$current.smooth <- subb$current.smooth/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "max.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("march.smooth","max.smooth", "current.smooth"), labels=c("March", "Max", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$max.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ggtitle("The New Endgland (+ IL) Epidemic")

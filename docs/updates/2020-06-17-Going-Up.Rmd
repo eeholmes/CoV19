@@ -11,140 +11,23 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
 library(CoV19)
 library(ggplot2)
 library(gridExtra)
+library(dplyr)
 ```
 
 ```{r child=file.path(here::here(), "updates/Forecast-Functions-2.Rmd")}
-```
-
-Previous entries: https://eeholmes.github.io/CoV19/Updates.html
-
-
-
-```{r states-forecast-new-england-midatlantic}
-newengland <- stateplot(c("ME","VT","NH","MA","RI","CT"))
-midatlantic <- stateplot(c("NY","NJ","PA"))
-midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))
-southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
-grid.arrange(newengland, midatlantic, midwest1, southatlantic, nrow=2)
-```
-
-Two weeks ago, I was watching South Dakota, Mississippi, Minnesota and Illinois. The 3 midwest states are trending downward. There is no sign of an uptick in cases in MN from the protests (nor in NYC, PA, DC). Maybe masks and being outdoors drastically reduced transmission? There is an uptick in MI, but it looks like it might be a one day increase such as happens when a bunch of back-logged cases are released. We'll know in a few days. Something is odd in SD. The death rate is very high 17 CFR which is 3-4x higher than other states.
-
-```{r states-forecast-sd-ms-mn-il}
-grid.arrange(stateplot("SD"), stateplot("MI"), stateplot("MN"), stateplot("IL"))
-```
-
-There is still a lot of discussion and worry about the southern states, and new cases are still high and increasing in Florida. However overall the south is not seeing a surge in cases like we saw in the northeast in the early part of the epidemic.. 
-
-```{r states-forecast-fl-ga-al-ms}
-grid.arrange(stateplot("FL"), stateplot("AL"), stateplot("GA"), stateplot("MS"))
-```
-
-
-In my home state, Washington, we been having an increases in cases. Mainly it's the Yakima outbreak and Tri-Cities outbreaks which are still going up. The case load in Yakima is crazy high, 600 per million per day. The death rate is low (2.84 CFR); this is in a the agricultural industry in the region and the infected tend to be younger in those cases. However I am surprised that there hasn't been more press about the hospital system and how they are coping.
-
-```{r states-forecast-wa}
-reg <- "King Washington US"
-king <- worldplot(reg)
-reg <- "Yakima Washington US"
-yakima <- worldplot(reg)
-reg <- c("Benton Washington US", "Franklin Washington US")
-benton <- worldplot(reg)
-
-grid.arrange(stateplot("WA"), king, yakima, benton, nrow=2)
-```
-
-
-## Regional trends
-
-Note: scroll down to the bottom of this page to see state by state data:
-https://eeholmes.github.io/CoV19/Forecasts.html
-
-Take home is that across the US, the new case curves (7-day average) continue to show a downward trend at the regional level across the northeast, even as states start to open up and despite the on-going protests. However in the southwest, the cases are increasing and at least one state (Arizona) is getting above the critical 150 new cases per million level.
-
-```{r states-forecast-westnosocal}
-reg <- c("San Diego California US",
-         "San Bernardino California US",
-         "Riverside California US",
-         "Orange California US",
-         "Los Angeles California US",
-         "Ventura California US",
-         "Kern California US",
-         "Santa Barbara California US",
-         "San Luis Obispo California US")
-cacounties <- unique(world$region[str_detect(world$region, "California")])
-ncacounties <- cacounties[!cacounties %in% reg & 
-                            !cacounties=="California US" & 
-                            !cacounties=="Out of CA California US" &
-                            !cacounties=="Unassigned California US"]
-ncacounties <- as.character(ncacounties)
-p <- myfun(world, ncacounties, regname="NorCal", posmin=100, maxh=150)
-popmill <- 0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]
-popmill <- round(popmill/1e6, digits=2)
-if(inherits(p, "list")){
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  onetoone <- (10000*popmill/365)/(p$cfr)
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
-  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
-northwest <- p$p
-}
-```
-
-
-```{r states-forecast-southca}
-reg <- c("San Diego California US",
-         "San Bernardino California US",
-         "Riverside California US",
-         "Orange California US",
-         "Los Angeles California US",
-         "Ventura California US",
-         "Kern California US",
-         "Santa Barbara California US",
-         "San Luis Obispo California US")
-p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
-if(inherits(p, "list")){
-popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
-    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  onetoone <- ((10000*popmill/365)/(p$cfr))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
-  socal <- p$p
-}
-```
-
-
-
-```{r states-forecast-emid}
-midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))
-midwest2 <- stateplot(c("MN", "MO", "ND", "SD", "IA", "NE"))
-southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
-eastsouth <- stateplot(c("AL", "MS", "GA", "NC","SC"))
-grid.arrange(midwest1, midwest2, southatlantic, eastsouth)
-```
-
-```{r states-forecast-sw}
-mtnwest <- stateplot(c("CO", "UT", "NM", "AZ","NV"))
-southcentral <- stateplot(c("TX", "OK", "KS", "AR"))
-grid.arrange(mtnwest, southcentral, northwest, socal)
-```
-
-```{r states-forecast-others}
-mtnnorth <- stateplot(c("ID", "MT", "WY"))
-grid.arrange(mtnnorth, stateplot("HI"), stateplot(c("WA", "OR")), stateplot("AK"))
 ```
 
 ```{r}
 getsmooth <- function(data, names){
   fil <- 7
 b <- data[data$region %in% names,]
-b$new.cases <- unlist(tapply(b$positive, b$region, function(x){c(NA, diff(x))}))
+b$region <- factor(b$region) # get rid of extra levels get names in right order
+b <- b %>% group_by(region) %>% mutate(new.cases = c(NA, diff(positive)))
 b$new.cases[b$new.cases<0] <- NA
-b$smooth.new.cases <- unlist(tapply(b$new.cases, b$region, function(x){stats::filter(x, rep(1/fil,fil))}))
-b$new.deaths <- unlist(tapply(b$death, b$region, function(x){c(NA, diff(x))}))
+b <- b %>% group_by(region) %>% mutate(smooth.new.cases = as.vector(stats::filter(new.cases, rep(1/fil,fil))))
+b <- b %>% group_by(region) %>% mutate(new.deaths = c(NA, diff(death)))
 b$new.deaths[b$new.deaths<0] <- NA
-b$smooth.new.deaths <- unlist(tapply(b$new.deaths, b$region, function(x){stats::filter(x, rep(1/fil,fil))}))
+b <- b %>% group_by(region) %>% mutate(smooth.new.deaths = as.vector(stats::filter(new.deaths, rep(1/fil,fil))))
 
 popmill <- popdata[match(names, popdata$name),]$population/1000000
 max.smooth <- tapply(b$smooth.new.cases, b$region, max, na.rm=TRUE)
@@ -171,83 +54,32 @@ return(smooth)
 }
 ```
 
+This entry will focus on states where the coronavirus is increasing and where the levels are getting up into the 'widespread' epidemic level. Previous entries: https://eeholmes.github.io/CoV19/Updates.html
+
 ```{r}
 bb <- getsmooth(states, state.abb)
 eub <- getsmooth(world, eu)
+lomb <- getsmooth(italy, "Lombardia")
+nyc <- getsmooth(world, c("New York New York US", "Suffolk Massachusetts US", "Essex New Jersey US"))
+```
 
-subb <- subset(bb, current.smooth.per.mill>100)
-subb <- subb[order(subb$current.smooth.per.mill),]
-barplot(sort(subb$current.smooth.per.mill), names.arg=subb$region)
-title("Currently with new cases per million > 100 per day")
-
-subb <- subset(bb, current.smooth.per.mill>100)
-subb <- subb[order(subb$current.smooth.per.mill),]
-ggplot(data=subb, aes(x=region, y=current.smooth.per.mill)) +
-  geom_bar(stat="identity", width=0.5) + xlab("") +
-  ggtitle("Currently at maximum new cases per day")
-
-subb <- subset(bb, current.smooth==max.smooth)
-ggplot(data=subb, aes(x=region, y=max.smooth.per.mill)) +
-  geom_bar(stat="identity", width=0.5) + xlab("") +
-  ggtitle("Currently at maximum new cases per day")
-
-subb <- subset(bb, current.smooth==max.smooth)
-subb$fill <- "grey"
-subb <- rbind(subb, data.frame(bb[bb$region=="NY",], fill="red"))
-ggplot(data=subb, aes(x=region, y=max.smooth.death/popmill, fill=fill)) +
-  geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
-  xlab("") +
-  ylab("Deaths per day per million") +
-  ggtitle("Currently at maximum new cases per day")
-
-subb <- subset(bb, current.smooth==max.smooth)
-subb$fill <- "grey"
-subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
-ggplot(data=subb, aes(x=region, y=max.smooth/popmill, fill=fill)) +
-  geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
-  xlab("") +
-  ylab("New cases per day per million") +
-  ggtitle("Currently at maximum new cases per day (averaged over 7 days)")
+First off, a little context. I don't know if it is widely appreciated that the US East Coast experienced the world's worst SARS-CoV-2 epidemic in terms of deaths per million. Almost 25,000 people have died in NY state of Covid-19 (the disease caused by SARS-CoV-2). This is a very large number.  The majority of deaths (over 22,000) were in NYC, and there the max deaths per million was `r format(nyc$max.smooth.death/nyc$popmill, digits=0)[1]`. That's almost 1 of every 200 people dying PER DAY at the peak deaths per day. 1.3 of every hundred people in NYC died in the last 3 months of Covid-19.
 
 
-subb <- rbind(bb, eub)
+```{r}
+subb <- rbind(bb, eub, lomb)
 subb <- subset(subb, max.smooth.death/popmill > 10)
 ggplot(data=subb, aes(x=region, y=max.smooth.death/popmill)) +
-  geom_bar(stat="identity", width=0.5) + xlab("") +
-  coord_flip() +
+  geom_bar(stat="identity", width=0.5, fill="steelblue") + 
+  xlab("") + ylab("Max deaths per day per million people") +
+  coord_flip() + theme_minimal() +
   ggtitle("Max per day deaths per million (averaged over 7 days)")
-  
-# new cases per day > 100
-subb <- subset(bb, current.smooth>april.smooth & current.smooth/popmill > 100)
-subb$fill <- "grey"
-subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
-subb$march.smooth <- subb$march.smooth/subb$popmill
-subb$april.smooth <- subb$april.smooth/subb$popmill
-subb$current.smooth <- subb$current.smooth/subb$popmill
+```
 
-df2 <- reshape2::melt(subb[,c("region", "april.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
-df2$variable <- factor(df2$variable, level=c("march.smooth","april.smooth", "current.smooth"), labels=c("March", "April", "Current"))
-df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
 
-ggplot(df2, aes(x=region, y=value, fill=variable)) +
-  geom_bar(stat='identity', position='dodge')
+However the East Coast epidemics are on the downswing. Their epidemic trajectories followed that of most European countries, which had an effective lockdown followed by effective post-lockdown control. This bar graph shows the average new cases per day in March and currently versus what they were at the peak of the epidemics.
 
-# new cases per day at max
-subb <- subset(bb, current.smooth==max.smooth)
-subb$fill <- "grey"
-subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
-subb$march.smooth <- subb$march.smooth/subb$popmill
-subb$april.smooth <- subb$april.smooth/subb$popmill
-subb$current.smooth <- subb$current.smooth/subb$popmill
-
-df2 <- reshape2::melt(subb[,c("region", "april.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
-df2$variable <- factor(df2$variable, level=c("march.smooth","april.smooth", "current.smooth"), labels=c("March", "April", "Current"))
-df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
-
-ggplot(df2, aes(x=region, y=value, fill=variable)) +
-  geom_bar(stat='identity', position='dodge') +
-  ggtitle("States currently at max new cases per day + NY, NJ, MA for comparison")
-
+```{r}
 # new england
 subb <- subset(bb, current.smooth<april.smooth & april.smooth/popmill>100 & current.smooth/popmill<75)
 subb$march.smooth <- subb$march.smooth/subb$popmill
@@ -260,4 +92,109 @@ df2$region <- factor(df2$region, level=subb$region[order(subb$max.smooth)])
 
 ggplot(df2, aes(x=region, y=value, fill=variable)) +
   geom_bar(stat='identity', position='dodge') +
+  ylab("Average new cases per day in March, max, and current") +
   ggtitle("The New Endgland (+ IL) Epidemic")
+```
+
+Here are the full epidemic trajectories.
+
+```{r states-forecast-east}
+grid.arrange(stateplot("NY"), stateplot("NJ"), stateplot("MA"), stateplot("PA"))
+```
+
+
+## Epidemics starting in the rest of the US
+
+Many US states avoided the spring peak and cases stayed fairly low (per capita), but now cases are going up. It was well-known that this is the pattern we would see; lots of discussion that we'd see this pattern and locking down in other states was in part to avoid all the states experiencing an epidemic at the same time. Obviously, another goal was to get us into summer, out of peak respiratory illness season, and hopefully other states wouldn't suffer the fate of the east coast states. It looks like that's not happening. The disease is spreading in focus points (like factories and institutions) and then community spread is occurring as people are not social-distancing (including importantly mask-wearing) enough to stop community spread.
+
+Right now in Arizona, the Carolinas, and Alabama, the per capita new cases is getting into the +150 per million zone where health care system are hard hit and control of the epidemic is lost (meaning community spread is so pervasive that mitigations don't stop a rapid rise in cases). This plot shows the states (in red) where the current new cases per day are above 100 and cases are going up fast. For comparison, the peak new cases per day in three hard hit east coast states are shown in blue.
+
+```{r}
+subb <- subset(bb, current.smooth==max.smooth & (current.smooth/popmill)>100)
+subb <- subb[order(subb$current.smooth/subb$popmill),]
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+ggplot(data=subb, aes(x=region, y=max.smooth/popmill, fill=fill)) +
+  geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
+  xlab("") +
+  ylab("New cases per day per million") +
+  ggtitle("Current new cases per day for AZ, NC, SC and AL (with NY, NJ, MA April maxes for comparison)")
+```
+
+```{r states-forecast-going-up}
+grid.arrange(stateplot("AZ", fitit=FALSE), 
+             stateplot("NC", fitit=FALSE),
+             stateplot("SC", fitit=FALSE),
+             stateplot("AL", fitit=FALSE))
+```
+
+
+The current deaths in these states do not represent the rapid rise of the last two weeks and actually the current deaths per day is not the max these states have experienced. It'll take another week and the deaths will start climbing up fast. This is the pattern we have seen in all the epidemics. At first it seems like a region has cases without deaths (even though we have never seen this), and then "shockingly" the deaths start going up. In the US, the case fatality rate is 4-6% depending on the state; the exception is some states where the cases have mainly come from the meat-processing and agricultural industry (IA, NE, AR). In that case, the infected people are younger and there may be testing of all workers, so mild cases are picked up. However, that doesn't apply to AZ, NC, SC, and AL.
+ 
+```{r}
+subb <- subset(bb, current.smooth==max.smooth & (current.smooth/popmill)>100)
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+subb$max.smooth.death <- subb$max.smooth.death/subb$popmill
+subb$current.smooth.death <- subb$current.smooth.death/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "max.smooth.death", "current.smooth.death")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("max.smooth.death", "current.smooth.death"), labels=c("Max", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ylab("Deaths per day per million") +
+  ggtitle("States currently at max new cases per day + NY, NJ, MA for comparison")
+```
+
+
+Looking at the current deaths per day and comparing to NY, NJ and MA gives you an idea of what to expect in the next few weeks for the states currently experiencing a rise in cases. If you look at the plot, things probably feel "ok". Cases are rising but deaths per day are lower. That's is about to change. My back of the envelope is we'll see 10-fold increases in the death rate in the next 30 days. Once the states peak, it's about 8 weeks to get back down if they successfully stop the spread. Another lockdown seems unlikely so it may be that we see the Swedish-type of epidemic, where a huge peak is avoided but the disease takes hold and we see steady high new cases and deaths for many months.
+
+```{r}
+worldplot("Sweden")
+```
+
+## Other states currently at peak new cases per day
+
+The previous plots highlighted those states that are getting into the levels where their health systems are starting to get strained. New cases per day per million over 150 is going to start stressing the system. But there are a number of other states that are seeing the highest number of new cases per day that they have ever seen. It was definitely known that cases would go up as states loosened restrictions and people began moving around. 
+
+```{r}
+# new cases per day at max
+subb <- subset(bb, current.smooth==max.smooth)
+subb$march.smooth <- subb$march.smooth/subb$popmill
+subb$april.smooth <- subb$april.smooth/subb$popmill
+subb$current.smooth <- subb$current.smooth/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "april.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("march.smooth","april.smooth", "current.smooth"), labels=c("March", "April", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ggtitle("All states currently at max new cases per day")
+```
+
+## Turning this around
+
+The goal now for public officials will be to turn this around. I am not hearing talk about more lockdowns. Epidemiologists now have a fairly good idea of how to stop spread. It turns out that fairly low tech methods work, but the question is whether enough people will adopt these practices.
+
+### Masks
+
+So, if you are not following the public health news, mask definitely work. Some recent studies. Note, thanks to Corvin Russell for many of these refs.
+
+* The case of the 2 covid-positive hairdressers in Missouri who worked on 140 customers. Both the hairdressers and customers were masked and customers were staggered (had appointments). The customers were tracked for a month. [None became infected](https://www.washingtonpost.com/business/2020/06/17/masks-salons-missouri/).
+* [Science paper on masks and airborne spread](https://science.sciencemag.org/content/early/2020/06/08/science.abc6197)
+* [Science paper on aerosol transmission](https://www.sciencemag.org/news/2020/04/you-may-be-able-spread-coronavirus-just-breathing-new-report-finds) Aerosol transmission means you can spread by breathing and virus 'hangs in the air'. In this case distance and hand-washing doesn't help so much, but masks help a lot as well as staying away from indoor spaces with many people.
+
+
+An epidemiologist who is involved in the CA response and spoke to my work said that masks will be mandatory eventually (so we might as well get used to it). Currently a number of east coast states (NY, NJ, CT and MA) require masks for everyone when in a public space where distance is not possible. [Here's a state by state summary of the rules by state](https://www.littler.com/publication-press/publication/facing-your-face-mask-duties-list-statewide-orders); some cities have stricter rules. 
+
+### Clusters and super-spreaders
+
+Clusters are driving the transmission and as well as aerosol transmission throughout a large indoor area. Estimates are that between 1 and 20 percent of index patients were responsible for 80% of infections (super-spreaders). We are seeing clusters in industry (meat-packing, fruit-packing, fishing boats, warehouses) and wherever people are gathered indoors together.
+
+* [Science article on an analysis of cluster](https://www.sciencemag.org/news/2020/05/why-do-some-covid-19-patients-infect-many-others-whereas-most-don-t-spread-virus-all) [CDC article on the same](https://wwwnc.cdc.gov/eid/article/26/9/20-2272_article?fbclid=IwAR0RSkOspMjp7emFfZJuXzHXy7pSxOhrw9LiTwd9fj1EnD88XaURLPNpaZk) It's happening mainly indoors where many people are crowded together.
+* [Another article on clusters and superspreaders](https://arstechnica.com/science/2020/06/just-10-20-of-covid-19-cases-behind-80-of-transmission-studies-suggest) Take-home is that we don't know who will become a super-spreader but we know what kinds of events lead to super-spreading and we can stop those events and thus stop most of the super-spreader events. Basically anytime you have large groups indoors together, esp talking, singing, chanting, etc., that is the set-up for a super-spreader event.
+
+Japan distills the risky situations to the 3 C's: closed, crowded and close.  To reduce super-spreading events and reduce your personal risk: "Avoid (1) Closed spaces with poor ventilation, (2) Crowded places, and (3) Close-contact settings, such as close-range conversations." Going to a friends' house for dinner? Sit outside and don't sit right next to each other. Stay out of indoor spaces with lots of people. Head to the store in the off hours. Don't go in if it is packed.

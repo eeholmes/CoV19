@@ -107,10 +107,10 @@ grid.arrange(stateplot("NY"), stateplot("NJ"), stateplot("MA"), stateplot("PA"))
 
 Many US states avoided the spring peak and cases stayed fairly low (per capita), but now cases are going up. It was well-known that this is the pattern we would see; lots of discussion that we'd see this pattern and locking down in other states was in part to avoid all the states experiencing an epidemic at the same time. Obviously, another goal was to get us into summer, out of peak respiratory illness season, and hopefully other states wouldn't suffer the fate of the east coast states. It looks like that's not happening. The disease is spreading in focus points (like factories and institutions) and then community spread is occurring as people are not social-distancing (including importantly mask-wearing) enough to stop community spread.
 
-Right now in Arizona, the Carolinas, and Alabama, the per capita new cases is getting into the +150 per million zone where health care system are hard hit and control of the epidemic is lost (meaning community spread is so pervasive that mitigations don't stop a rapid rise in cases). This plot shows the states (in red) where the current new cases per day are above 100 and cases are going up fast. For comparison, the peak new cases per day in three hard hit east coast states are shown in blue.
+Right now in Arizona, Arkansas, and Alabama, the per capita new cases is getting into the +150 per million zone where health care system are hard hit and control of the epidemic is lost (meaning community spread is so pervasive that mitigations don't stop a rapid rise in cases). The Carolinas and Utah are going up fast and are now above 100 per million per day. This plot shows the states (in red) where the current new cases per day are above 100 and cases are going up fast. For comparison, the peak new cases per day in three hard hit east coast states are shown in blue.
 
 ```{r}
-subb <- subset(bb, current.smooth==max.smooth & (current.smooth/popmill)>100)
+subb <- subset(bb, current.smooth>.95*max.smooth & (current.smooth/popmill)>100)
 subb <- subb[order(subb$current.smooth/subb$popmill),]
 subb$fill <- "grey"
 subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
@@ -118,12 +118,12 @@ ggplot(data=subb, aes(x=region, y=max.smooth/popmill, fill=fill)) +
   geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
   xlab("") +
   ylab("New cases per day per million") +
-  ggtitle("Current new cases per day for AZ, NC, SC and AL (with NY, NJ, MA April maxes for comparison)")
+  ggtitle("Current new cases per day at max and > 100 (with NY, NJ, MA April maxes for comparison)")
 ```
 
 ```{r states-forecast-going-up}
 grid.arrange(stateplot("AZ", fitit=FALSE), 
-             stateplot("NC", fitit=FALSE),
+             stateplot("AR", fitit=FALSE),
              stateplot("SC", fitit=FALSE),
              stateplot("AL", fitit=FALSE))
 ```

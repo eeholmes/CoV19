@@ -7,7 +7,7 @@
 \format{
 A data frame with 7 variables:
 \describe{
-  \item{date}{date. Data is for the previous day.}
+  \item{date}{date. Data are for the previous day.}
   \item{region}{State name}
   \item{positive}{Cumulative positives.}
   \item{negative}{Cumulative negatives (from testing).}

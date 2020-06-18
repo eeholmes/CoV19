@@ -7,7 +7,7 @@
 \format{
 A data frame with 7 variables:
 \describe{
-  \item{date}{date. Data is for the previous day.}
+  \item{date}{date. Data are for the previous day.}
   \item{region}{Province.}
   \item{positive}{Cumulative positives aka totale_casi. Note the totale_positivi column in original data is current number of positives (total-recovered).}
   \item{hospitalized}{Current number in the hospital. aka totale_ospedalizzati}

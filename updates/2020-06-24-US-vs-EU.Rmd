@@ -1,0 +1,200 @@
+---
+title: "Cases going up"
+date: June 17, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+```{r child=file.path(here::here(), "updates/Forecast-Functions-2.Rmd")}
+```
+
+```{r}
+getsmooth <- function(data, names){
+  fil <- 7
+b <- data[data$region %in% names,]
+b$region <- factor(b$region) # get rid of extra levels get names in right order
+b <- b %>% group_by(region) %>% mutate(new.cases = c(NA, diff(positive)))
+b$new.cases[b$new.cases<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.cases = as.vector(stats::filter(new.cases, rep(1/fil,fil))))
+b <- b %>% group_by(region) %>% mutate(new.deaths = c(NA, diff(death)))
+b$new.deaths[b$new.deaths<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.deaths = as.vector(stats::filter(new.deaths, rep(1/fil,fil))))
+
+popmill <- popdata[match(names, popdata$name),]$population/1000000
+max.smooth <- tapply(b$smooth.new.cases, b$region, max, na.rm=TRUE)
+max.smooth <- max.smooth[match(names, names(max.smooth))]
+current.smooth <- tapply(b$smooth.new.cases, b$region, function(x){x[max(which(!is.na(x)))]})
+current.smooth <- current.smooth[match(names, names(current.smooth))]
+
+subb <- b[format(b$date, "%b")=="Mar",]
+march.smooth <- tapply(subb$new.cases, subb$region, function(x){mean(x, na.rm=TRUE)})
+march.smooth <- march.smooth[match(names, names(march.smooth))]
+
+subb <- b[format(b$date, "%b")=="Apr",]
+april.smooth <- tapply(subb$new.cases, subb$region, function(x){mean(x, na.rm=TRUE)})
+april.smooth <- april.smooth[match(names, names(april.smooth))]
+
+max.smooth.death <- tapply(b$smooth.new.deaths, b$region, max, na.rm=TRUE)
+max.smooth.death <- max.smooth.death[match(names, names(max.smooth.death))]
+current.smooth.death <- tapply(b$smooth.new.deaths, b$region, function(x){x[max(which(!is.na(x)))]})
+current.smooth.death <- current.smooth.death[match(names, names(current.smooth.death))]
+
+smooth=data.frame(current.smooth, max.smooth, current.smooth.death, max.smooth.death, march.smooth, april.smooth, region=names, popmill=popmill)
+
+return(smooth)
+}
+```
+
+This entry will focus on states where the coronavirus is increasing and where the levels are getting up into the 'widespread' epidemic level. Previous entries: https://eeholmes.github.io/CoV19/Updates.html
+
+```{r}
+bb <- getsmooth(states, state.abb)
+eub <- getsmooth(world, eu)
+lomb <- getsmooth(italy, "Lombardia")
+nyc <- getsmooth(world, c("New York New York US", "Suffolk Massachusetts US", "Essex New Jersey US"))
+```
+
+First off, a little context. I don't know if it is widely appreciated that the US East Coast experienced the world's worst SARS-CoV-2 epidemic in terms of deaths per million. Almost 25,000 people have died in NY state of Covid-19 (the disease caused by SARS-CoV-2). This is a very large number.  The majority of deaths (over 22,000) were in NYC, and there the max deaths per million was `r format(nyc$max.smooth.death/nyc$popmill, digits=0)[1]`. That's almost 1 of every 200 people dying PER DAY at the peak deaths per day. 1.3 of every hundred people in NYC died in the last 3 months of Covid-19.
+
+
+```{r}
+subb <- rbind(bb, eub, lomb)
+subb <- subset(subb, max.smooth.death/popmill > 10)
+ggplot(data=subb, aes(x=region, y=max.smooth.death/popmill)) +
+  geom_bar(stat="identity", width=0.5, fill="steelblue") + 
+  xlab("") + ylab("Max deaths per day per million people") +
+  coord_flip() + theme_minimal() +
+  ggtitle("Max per day deaths per million (averaged over 7 days)")
+```
+
+
+However the East Coast epidemics are on the downswing. Their epidemic trajectories followed that of most European countries, which had an effective lockdown followed by effective post-lockdown control. This bar graph shows the average new cases per day in March and currently versus what they were at the peak of the epidemics.
+
+```{r}
+# new england
+subb <- subset(bb, current.smooth<april.smooth & april.smooth/popmill>100 & current.smooth/popmill<75)
+subb$march.smooth <- subb$march.smooth/subb$popmill
+subb$max.smooth <- subb$max.smooth/subb$popmill
+subb$current.smooth <- subb$current.smooth/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "max.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("march.smooth","max.smooth", "current.smooth"), labels=c("March", "Max", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$max.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ylab("Average new cases per day in March, max, and current") +
+  ggtitle("The New Endgland (+ IL) Epidemic")
+```
+
+Here are the full epidemic trajectories.
+
+```{r states-forecast-east}
+grid.arrange(stateplot("NY"), stateplot("NJ"), stateplot("MA"), stateplot("PA"))
+```
+
+
+## Epidemics starting in the rest of the US
+
+Many US states avoided the spring peak and cases stayed fairly low (per capita), but now cases are going up. It was well-known that this is the pattern we would see; lots of discussion that we'd see this pattern and locking down in other states was in part to avoid all the states experiencing an epidemic at the same time. Obviously, another goal was to get us into summer, out of peak respiratory illness season, and hopefully other states wouldn't suffer the fate of the east coast states. It looks like that's not happening. The disease is spreading in focus points (like factories and institutions) and then community spread is occurring as people are not social-distancing (including importantly mask-wearing) enough to stop community spread.
+
+Right now in Arizona, Arkansas, and Alabama, the per capita new cases is getting into the +150 per million zone where health care system are hard hit and control of the epidemic is lost (meaning community spread is so pervasive that mitigations don't stop a rapid rise in cases). The Carolinas and Utah are going up fast and are now above 100 per million per day. This plot shows the states (in red) where the current new cases per day are above 100 and cases are going up fast. For comparison, the peak new cases per day in three hard hit east coast states are shown in blue.
+
+```{r}
+subb <- subset(bb, current.smooth>.95*max.smooth & (current.smooth/popmill)>100)
+subb <- subb[order(subb$current.smooth/subb$popmill),]
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+ggplot(data=subb, aes(x=region, y=max.smooth/popmill, fill=fill)) +
+  geom_bar(stat="identity", width=0.5, show.legend=FALSE) + 
+  xlab("") +
+  ylab("New cases per day per million") +
+  ggtitle("Current new cases per day at max and > 100 (with NY, NJ, MA April maxes for comparison)")
+```
+
+```{r states-forecast-going-up}
+grid.arrange(stateplot("AZ", fitit=FALSE), 
+             stateplot("AR", fitit=FALSE),
+             stateplot("SC", fitit=FALSE),
+             stateplot("AL", fitit=FALSE))
+```
+
+
+The current deaths in these states do not represent the rapid rise of the last two weeks and actually the current deaths per day is not the max these states have experienced. It'll take another week and the deaths will start climbing up fast. This is the pattern we have seen in all the epidemics. At first it seems like a region has cases without deaths (even though we have never seen this), and then "shockingly" the deaths start going up. In the US, the case fatality rate is 4-6% depending on the state; the exception is some states where the cases have mainly come from the meat-processing and agricultural industry (IA, NE, AR). In that case, the infected people are younger and there may be testing of all workers, so mild cases are picked up. However, that doesn't apply to AZ, NC, SC, and AL.
+ 
+```{r}
+subb <- subset(bb, current.smooth==max.smooth & (current.smooth/popmill)>100)
+subb$fill <- "grey"
+subb <- rbind(subb, data.frame(bb[bb$region %in% c("NY", "NJ", "MA"),], fill="red"))
+subb$max.smooth.death <- subb$max.smooth.death/subb$popmill
+subb$current.smooth.death <- subb$current.smooth.death/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "max.smooth.death", "current.smooth.death")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("max.smooth.death", "current.smooth.death"), labels=c("Max", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ylab("Deaths per day per million") +
+  ggtitle("States currently at max new cases per day + NY, NJ, MA for comparison")
+```
+
+
+Looking at the current deaths per day and comparing to NY, NJ and MA gives you an idea of what to expect in the next few weeks for the states currently experiencing a rise in cases. If you look at the plot, things probably feel "ok". Cases are rising but deaths per day are lower. That's is about to change. My back of the envelope is we'll see 10-fold increases in the death rate in the next 30 days. Once the states peak, it's about 8 weeks to get back down if they successfully stop the spread. Another lockdown seems unlikely so it may be that we see the Swedish-type of epidemic, where a huge peak is avoided but the disease takes hold and we see steady high new cases and deaths for many months.
+
+```{r}
+worldplot("Sweden")
+```
+
+## Other states currently at peak new cases per day
+
+The previous plots highlighted those states that are getting into the levels where their health systems are starting to get strained. New cases per day per million over 150 is going to start stressing the system. But there are a number of other states that are seeing the highest number of new cases per day that they have ever seen. It was definitely known that cases would go up as states loosened restrictions and people began moving around. 
+
+```{r}
+# new cases per day at max
+subb <- subset(bb, current.smooth>.95*max.smooth)
+subb$march.smooth <- subb$march.smooth/subb$popmill
+subb$april.smooth <- subb$april.smooth/subb$popmill
+subb$current.smooth <- subb$current.smooth/subb$popmill
+
+df2 <- reshape2::melt(subb[,c("region", "april.smooth","march.smooth", "current.smooth")], id.vars=c('region'))
+df2$variable <- factor(df2$variable, level=c("march.smooth","april.smooth", "current.smooth"), labels=c("March", "April", "Current"))
+df2$region <- factor(df2$region, level=subb$region[order(subb$april.smooth)])
+
+ggplot(df2, aes(x=region, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') +
+  ggtitle("All states currently at max new cases per day")
+```
+
+## Turning this around
+
+The goal now for public officials will be to turn this around. I am not hearing talk about more lockdowns. Epidemiologists now have a fairly good idea of how to stop spread. It turns out that fairly low tech methods work, but the question is whether enough people will adopt these practices.
+
+### Masks
+
+So, if you are not following the public health news, mask definitely work. Some recent studies. Note, thanks to Corvin Russell for many of these refs.
+
+* The case of the 2 covid-positive hairdressers in Missouri who worked on 140 customers. Both the hairdressers and customers were masked and customers were staggered (had appointments). The customers were tracked for a month. [None became infected](https://www.washingtonpost.com/business/2020/06/17/masks-salons-missouri/).
+* [Science paper on masks and airborne spread](https://science.sciencemag.org/content/early/2020/06/08/science.abc6197)
+* [Science paper on aerosol transmission](https://www.sciencemag.org/news/2020/04/you-may-be-able-spread-coronavirus-just-breathing-new-report-finds) Aerosol transmission means you can spread by breathing and virus 'hangs in the air'. In this case distance and hand-washing doesn't help so much, but masks help a lot as well as staying away from indoor spaces with many people.
+
+
+An epidemiologist who is involved in the CA response and spoke to my work said that masks will be mandatory eventually (so we might as well get used to it). Currently a number of east coast states (NY, NJ, CT and MA) require masks for everyone when in a public space where distance is not possible. [Here's a state by state summary of the rules by state](https://www.littler.com/publication-press/publication/facing-your-face-mask-duties-list-statewide-orders); some cities have stricter rules. 
+
+### Clusters and super-spreaders
+
+Clusters are driving the transmission and as well as aerosol transmission throughout a large indoor area. Estimates are that between 1 and 20 percent of index patients were responsible for 80% of infections (super-spreaders). We are seeing clusters in industry (meat-packing, fruit-packing, fishing boats, warehouses) and wherever people are gathered indoors together.
+
+* [Science article on an analysis of cluster](https://www.sciencemag.org/news/2020/05/why-do-some-covid-19-patients-infect-many-others-whereas-most-don-t-spread-virus-all) [CDC article on the same](https://wwwnc.cdc.gov/eid/article/26/9/20-2272_article?fbclid=IwAR0RSkOspMjp7emFfZJuXzHXy7pSxOhrw9LiTwd9fj1EnD88XaURLPNpaZk) It's happening mainly indoors where many people are crowded together.
+* [Another article on clusters and superspreaders](https://arstechnica.com/science/2020/06/just-10-20-of-covid-19-cases-behind-80-of-transmission-studies-suggest) Take-home is that we don't know who will become a super-spreader but we know what kinds of events lead to super-spreading and we can stop those events and thus stop most of the super-spreader events. Basically anytime you have large groups indoors together, esp talking, singing, chanting, etc., that is the set-up for a super-spreader event.
+
+Japan distills the risky situations to the 3 C's: closed, crowded and close.  To reduce super-spreading events and reduce your personal risk: "Avoid (1) Closed spaces with poor ventilation, (2) Crowded places, and (3) Close-contact settings, such as close-range conversations." Going to a friends' house for dinner? Sit outside and don't sit right next to each other. Stay out of indoor spaces with lots of people. Head to the store in the off hours. Don't go in if it is packed.

@@ -1,6 +1,6 @@
 ---
-title: "Cases going up"
-date: June 17, 2020
+title: "USA versus EU"
+date: June 25, 2020
 ---
 
 ```{r setup, include=FALSE}

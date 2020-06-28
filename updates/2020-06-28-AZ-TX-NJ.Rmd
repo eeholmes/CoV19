@@ -1,0 +1,306 @@
+---
+title: "Forecasting the AZ, TX and FL epidemics"
+date: June 28, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+```{r child=file.path(here::here(), "updates/Forecast-Functions-2.Rmd")}
+```
+
+```{r}
+getsmooth <- function(data, names){
+  fil <- 7
+b <- data[data$region %in% names,]
+b$region <- factor(b$region) # get rid of extra levels get names in right order
+b <- b %>% group_by(region) %>% mutate(new.cases = c(NA, diff(positive)))
+b$new.cases[b$new.cases<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.cases = as.vector(stats::filter(new.cases, rep(1/fil,fil))))
+b <- b %>% group_by(region) %>% mutate(new.deaths = c(NA, diff(death)))
+b$new.deaths[b$new.deaths<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.deaths = as.vector(stats::filter(new.deaths, rep(1/fil,fil))))
+
+popmill <- popdata[match(names, popdata$name),]$population/1000000
+max.smooth <- tapply(b$smooth.new.cases, b$region, max, na.rm=TRUE)
+max.smooth <- max.smooth[match(names, names(max.smooth))]
+current.smooth <- tapply(b$smooth.new.cases, b$region, function(x){x[max(which(!is.na(x)))]})
+current.smooth <- current.smooth[match(names, names(current.smooth))]
+
+subb <- b[format(b$date, "%b")=="Mar",]
+march.smooth <- tapply(subb$new.cases, subb$region, function(x){mean(x, na.rm=TRUE)})
+march.smooth <- march.smooth[match(names, names(march.smooth))]
+
+subb <- b[format(b$date, "%b")=="Apr",]
+april.smooth <- tapply(subb$new.cases, subb$region, function(x){mean(x, na.rm=TRUE)})
+april.smooth <- april.smooth[match(names, names(april.smooth))]
+
+max.smooth.death <- tapply(b$smooth.new.deaths, b$region, max, na.rm=TRUE)
+max.smooth.death <- max.smooth.death[match(names, names(max.smooth.death))]
+current.smooth.death <- tapply(b$smooth.new.deaths, b$region, function(x){x[max(which(!is.na(x)))]})
+current.smooth.death <- current.smooth.death[match(names, names(current.smooth.death))]
+
+smooth=data.frame(current.smooth, max.smooth, current.smooth.death, max.smooth.death, march.smooth, april.smooth, region=names, popmill=popmill)
+
+return(smooth)
+}
+```
+
+```{r}
+getsmoothts <- function(data, names){
+  fil <- 7
+b <- data[data$region %in% names,]
+b$region <- factor(b$region) # get rid of extra levels get names in right order
+b <- b %>% group_by(region) %>% mutate(new.cases = c(NA, diff(positive)))
+b$new.cases[b$new.cases<0] <- NA
+filfun <- function(x, fil=7){
+  c(rep(NA,floor(fil/2)),zoo::rollapply(x, fil, mean, na.rm=TRUE), rep(NA,floor(fil/2)))
+}
+#b <- b %>% group_by(region) %>% mutate(smooth.new.cases = as.vector(stats::filter(new.cases, rep(1/fil,fil))))
+b <- b %>% group_by(region) %>% mutate(smooth.new.cases = as.vector(filfun(new.cases)))
+b <- b %>% group_by(region) %>% mutate(new.deaths = c(NA, diff(death)))
+b$new.deaths[b$new.deaths<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.deaths = as.vector(stats::filter(new.deaths, rep(1/fil,fil))))
+b <- b %>% group_by(region) %>% mutate(smooth.new.deaths = as.vector(filfun(new.deaths)))
+
+popmill <- popdata[match(names, popdata$name),]$population/1000000
+names(popmill) <- popmill
+b$popmill <- popmill[match(b$region, names)]
+
+b <- b %>% group_by(region) %>% mutate(min.date.death=min(date)-min(date[death/popmill>100]))
+b <- b %>% group_by(region) %>% mutate(min.date.cases=min(date)-min(date[positive/popmill>1000]))
+
+return(list(smooth=b, popmill=popmill))
+}
+```
+
+
+This entry will focus on Arizona, Florida and Texas and compare them to New York, Massachusetts, and New Jersey.
+Previous entries: https://eeholmes.github.io/CoV19/Updates.html
+
+Like the northeast states, Arizona, Florida and Texas are now entering an epidemic phase where they have lost control of the virus. One of the difficulties for the US is that we cannot close state borders effectively. States can require quarantines but that is hard to enforce. We have seen over and over, how hotspots develop in locations that are draws from people from other regions. Travel into and out of US hotspots continually seeds infections in other areas and at some point enough seedings occur and enough take hold. Most disease seedings into a new area die out (the person doesn't spread it to enough people), but a few become 'super-spreader' events--i.e. the person attends a few big social gatherings in that key pre-symptom window when they feel "ok" but have high virus load in their lungs and exhale that all over an enclosed space with many people. The epidemics in AZ, TX, and FL are certain to spread. There is constant travel into and out of those states.
+
+The pattern of the epidemics in the northeast were multiple "seedings" of the disease due to travel in from Europe (particularly Italy) followed by "silent" (not much testing) spread throughout the community, and then a "flash" of very fast increases in cases, followed approximately two weeks later by very fast increases in deaths. The "flash" is just how exponential growth appears to us. When numbers are doubling at low levels, the increases are not noticeable and then once the numbers get bigger, they get big really really fast. 
+
+Florida, Arizona, and Texas are now showing a similar pattern. The initial lockdown was not successful (cases were not sufficiently driven down), once lockdown was lifted community spread resumed. Now they are in the "flash" phase where cases increase rapidly but deaths have not yet entered the flash phase.
+
+Here is a plot of the 7-day average new cases per day per million people. The x-axis is days since the average per capita new cases per day reached 100. The dashed lines are NY, NJ and MA while the solid lines are AZ, FL, and TX. The AZ-TX-FL lines are quite similar in the rate of increase to the NY-NJ-MA lines. I put Sweden on just because I hear Sweden used as an example of a country that let the virus "take its own course" but that is entirely untrue. They imposed many mitigations to prevent a large epidemic occurring and rather staying with steady, manageable, levels. I also included Denmark to show a European country that controlled the virus and didn't let it spread at all (most of Europe looks like this, exceptions being Belgium, UK, Spain, Italy, and Sweden)
+
+
+```{r}
+b1 <- getsmoothts(world, c("New York US", "Massachusetts US", "New Jersey US"))$smooth
+b1 <- cbind(b1, wave="northeast")
+b2 <- getsmoothts(world, c("Arizona US", "Florida US", "Texas US"))$smooth
+b2 <- cbind(b2, wave="south")
+b3 <- getsmoothts(world, c("Sweden", "Denmark"))$smooth
+b3 <- cbind(b3, wave="nordic")
+b <- rbind(b1,b2,b3)
+b <- b %>% group_by(region) %>% mutate(min.date=date-min(date[smooth.new.cases/popmill>100], na.rm=TRUE))
+b$min.date[b$region=="Denmark"] <- b$min.date[b$region=="Sweden"]
+b$wave <- factor(b$wave, levels=c("south", "northeast", "nordic"))
+ggplot(b, aes(x=min.date, y=smooth.new.cases/popmill, color=region, linetype=wave))+geom_line(lwd=1)+
+  xlim(c(-10,100))+xlab("days since daily new cases per million over 100")+
+  ggtitle("NY, NJ, MA versus AZ, FL, TX") +
+  geom_vline(xintercept=0)+
+  annotate("text", x=-2, y=400, label="northeast lockdown", angle=90)
+```
+
+However the epidemics in the northeast (and eastern midwest) were most severe in the big cities (number of deaths and deaths per million), with NYC being the worst hit by far with approximately 1.3% of the New York county population dying from Covid-19 in 100 days. Newark and Boston were not hit nearly as hard with 0.22% and 0.12% dying of Covid-19 in Essex and Suffolk counties.
+
+```{r}
+b <- getsmoothts(world, c("New York New York US", "Suffolk Massachusetts US", "Essex New Jersey US"))$smooth
+tbl <- b %>% group_by(region) %>% summarize(death.per.100=max(death/(popmill*10000)))
+knitr::kable(tbl, "html") %>%
+  kableExtra::kable_styling(full_width = FALSE)
+```
+
+
+
+```{r}
+names <- subset(world, stringr::str_detect(region, "US"))$region
+popmill <- popdata[match(names, popdata$name),]$population/1000000
+names <- names[popmill>0.75]
+names <- names[!(names %in% paste(state.name, "US"))]
+df <- getsmoothts(world, names)$smooth
+```
+```{r}
+df2 <- df %>% group_by(region) %>% 
+  summarize(max.pos=max(smooth.new.cases, na.rm=TRUE)/max(popmill),
+            curr.pos=(smooth.new.cases/popmill)[which(date==Sys.Date()-4)])
+df2 <- df2[order(df2$max.pos, decreasing=TRUE),]
+epi.done <- df2$max.pos>200 & df2$curr.pos<0.1*df2$max.pos
+df.done <- df2[epi.done,]
+epi.done.names <- df.done$region
+epi.starting <- df2$max.pos>200 & df2$curr.pos>0.95*df2$max.pos
+df.starting <- df2[epi.starting,]
+epi.starting.names <- df.starting$region
+
+```
+
+NYC was (and let's hope remains) an outlier. Let's look at all the counties over 750,000 people that experienced an epidemic and are now well past it with current new cases less than 10% of what they were at the peak. There are `r length(epi.done)` such counties representing the NYC Metro region including NJ, Boston Metro area, Detroit Metro area, and New Haven, CT. Chicago doesn't appear on this list as its epidemic has not reached 10% of its peak.
+
+```{r}
+knitr::kable(df.done[order(df.done$max.pos, decreasing=TRUE),], "html") %>%
+  kableExtra::kable_styling(full_width=FALSE)
+```
+
+The following counties, all in Arizona, Florida and Texas (+ Atlanta), have reached the threshold 200 new cases per day per million people. Based on following the news, this is the threshold when many US metro county health systems are quite close to being full and the county needs to begin taking drastic actions to try to stop the spread of coronavirus. Houston (Harris County) announced that its hospitals had reached capacity at that threshold. San Antonio (Bexar County) sent an today that its hospitals are reaching capacity. Phoenix activated its hospital surge plans two days ago. Phoenix must have very high hospital capacity (or was doing extensive testing and catching many low-symtom cases) because it activated its surge plan when new cases per day per million was up above 300. Miami-Dade county must have even higher hospital capacity as [it is reporting](https://www.miamidade.gov/information/library/2020-06-28-new-normal-dashboard.pdf) 30% of hospital and ICU beds available even with new cases per day per million also above 300. However, I have reports of individual hospitals in South Florida having reach capacity.
+
+```{r}
+knitr::kable(df.starting[,-3], "html") %>%
+  kableExtra::kable_styling(full_width=FALSE)
+```
+
+We can compare the 7-day average new cases per day per million people for these metropolitan counties to the counties with Phoenix, Houston, San Antonio and Miami. I have left off New York county, because its epidemic was unusually severe. The Phoenix, Houston, San Antonio and Miami lines are the solid line. It would appear, at this early stage, that these cities are following the pattern of the other cities that had epidemics and we can use that to make a guess at what's ahead in Florida, Arizona and Texas.
+
+```{r}
+reg <- epi.done.names[-1]
+b1 <- getsmoothts(world, reg)$smooth
+b1 <- cbind(b1, wave="northeast")
+reg <- c("Maricopa Arizona US", "Harris Texas US", "Bexar Texas US", "Miami-Dade Florida US")
+b2 <- getsmoothts(world, reg)$smooth
+b2 <- cbind(b2, wave="south")
+b <- rbind(b1,b2)
+b <- b %>% group_by(region) %>% mutate(min.date=date-min(date[smooth.new.cases/popmill>200], na.rm=TRUE))
+b$wave <- factor(b$wave, levels=c("south", "northeast"))
+ggplot(b, aes(x=min.date, y=smooth.new.cases/popmill, color=region, linetype=wave))+geom_line(lwd=1)+
+  xlim(c(-10,100))+xlab("days since daily new cases per million over 200")+
+  ggtitle("Metro counties that have completed a first wave versus Phoenix, Miami, Houston") +
+  geom_vline(xintercept=0)+
+  annotate("text", x=-2, y=400, label="northeast lockdown", angle=90)
+```
+
+
+## Where are Arizona, Texas and Florida headed?
+
+Using the patterns seen in the northeast outbreaks, we can make a guess at the mortalities and total cases to expect in the current outbreaks in the south/southwest. These estimates are probably a lower bound however. At around day 0 (when new cases per million were close to 100), NY, NJ, and MA employed a strict lockdown to stop their epidemics. AZ has gone well past that threshold without any severe mitigations, like a "shelter in place" order. Only recently were cities in Texas allowed to impose their own stricter regulations to enforce social distancing. We have yet to see a cases where a city was not put into lockdown to stop a coronavirus epidemic once is got out of control. So we are entering new territory here. Though Sweden is often touted as a country that did not employ mitigations, that's not true. They didn't lockdown like the rest of Europe, but certainly employed a variety of mitigations to reduce spread and have never entered a "flash" phase where they lost control of the epidemic in the way that we are seeing in some US states (see the first plot).
+
+### Mortality patterns
+
+In the northeast, mortality started rising 7 (NY) to 14 (MA) days after cases started rising and it was only after daily new cases per million reached 100 (this is 10 on the graph because I divided new cases by 10) that the death curves started increasing. In NJ, this is really apparent. Reported deaths seem fine, fine, fine and then they started zooming up when daily new cases per million hit 200. Why the delay? First, people are on ventilators for a long time before dying and there are delays in death reporting. There are a few layers reporting (hospital, county, then state) before it appears on the state-wide lists. Some states have longer reporting delays than others.
+
+```{r}
+b1 <- getsmoothts(world, c("New York US", "Massachusetts US", "New Jersey US"))$smooth
+b1 <- b1 %>% group_by(region) %>% mutate(min.date=date-min(date[smooth.new.cases/popmill>100], na.rm=TRUE))
+b <- data.frame(region=rep(b1$region, 2), min.date=rep(b1$min.date,2), 
+                value=c(0.1*b1$smooth.new.cases/b1$popmill, b1$smooth.new.deaths/b1$popmill), 
+                type=rep(c("cases","deaths"), each=dim(b1)[1]))
+ggplot(b, aes(x=min.date, y=value, color=region, linetype=type))+geom_line(lwd=1)+
+  xlim(c(-10,25))+xlab("days since daily new cases per million over 100")+
+  ylab("daily new cases/10 (solid) and daily deaths (dashed) -- per million")+
+  ggtitle("daily cases/10 versus deaths per million") +
+  geom_vline(xintercept=0)+
+  facet_wrap(~region)
+```
+
+In Arizona, Florida and Texas, we are not yet seeing a rise in mortalities. We will eventually. The disease still has no cure. But for Arizona in particular, we are seeing an unusually long delay before the daily death curve begins to track the new cases curve. My guess is sometime in the next 7 days, it'll start tracking. You can just begin to see that the Arizona mortality curve is start to go up (20 days after new cases per day hit 100 per million). In the northeast, we saw the same delay but much shorter. New cases were going up, but the deaths were not so there was a sense that "Maybe we got lucky. Maybe people won't die here." and then the deaths start piling up. We saw that in Germany too. For so long, people thought Germany was somehow special. Nope it just took longer. 
+
+```{r}
+b1 <- getsmoothts(world, c("Arizona US", "Texas US", "Florida US"))$smooth
+b1 <- b1 %>% group_by(region) %>% mutate(min.date=date-min(date[smooth.new.cases/popmill>100], na.rm=TRUE))
+b <- data.frame(region=rep(b1$region, 2), min.date=rep(b1$min.date,2), 
+                value=c(0.1*b1$smooth.new.cases/b1$popmill, b1$smooth.new.deaths/b1$popmill), 
+                type=rep(c("cases","deaths"), each=dim(b1)[1]))
+ggplot(b, aes(x=min.date, y=value, color=region, linetype=type))+geom_line(lwd=1)+
+  xlim(c(-10,25))+xlab("days since daily new cases per million over 100")+
+  ylab("daily new cases/10 (solid) and daily deaths (dashed) -- per million")+
+  ggtitle("daily cases/10 versus deaths per million") +
+  geom_vline(xintercept=0)+
+  ylim(c(0,50))+
+  facet_wrap(~region)
+```
+
+### Expected Mortality and Cases
+
+Using the northeast states, we can ballpark estimate what the total cases and mortalities might be in Arizona, Texas and Florida. I'm using NY, NJ, and MA because these states lost control of the epidemic. Even after the lockdown, the cases went up 4-5x in those states and went up 30x in NYC. Nothing the public officials could do would stop the increase. Eventually the lockdown worked (or it burned itself out?) but it took awhile. Now AZ, TX and FL are the new northeast.  Here are the current positive cases and deaths per 100 in the northeast. At the state level, the range is 1.5 to 2 for positive cases per 100 and 0.11 to 0.17 for deaths.  
+
+
+```{r}
+reg <- c("New York US", "Massachusetts US", "New Jersey US")
+b <- getsmoothts(world, reg)$smooth
+per.100.state <- subset(b, region %in% reg) %>% group_by(region) %>% summarize(positive.per.100=max(positive/(10000*popmill), na.rm=TRUE), deaths.per.100=max(death/(10000*popmill), na.rm=TRUE))
+reg <- epi.done.names[-1]
+b <- getsmoothts(world, reg)$smooth
+per.100.city <- subset(b, region %in% reg) %>% group_by(region) %>% summarize(positive.per.100=max(positive/(10000*popmill), na.rm=TRUE), deaths.per.100=max(death/(10000*popmill), na.rm=TRUE))
+```
+
+```{r}
+knitr::kable(per.100.state, "html") %>%
+  kableExtra::kable_styling(full_width = FALSE)
+```
+
+For the urban centers, I used the data from all metro areas minus New York county (NYC) that had an epidemic (7-day average new cases per day over 200 per million people). The range is 
+`r round(min(per.100.city$positive.per.100), digits=1)`
+to `r round(max(per.100.city$positive.per.100), digits=1)`
+for positives and 
+`r round(min(per.100.city$deaths.per.100), digits=1)`
+to `r round(max(per.100.city$deaths.per.100), digits=1)`
+for deaths. I'll use these as my upper and lower ranges for what to expect in the AZ, TX and FL metro counties. But I am going to multiply the death number by 4/7 because the CFR in the northeast was around 7% whereas in AZ, TX and FL, it has been closer to 4%. This may be over-optimistic on my part to use 4/7ths. Given that states are reporting that the median age of infection is lower than was reported earlier, I think the CFR is likely to be lower.
+
+```{r}
+knitr::kable(per.100.city, "html",
+             caption="<center><strong>Metro counties that have experienced a large epidemic</strong></center>") %>%
+  kableExtra::kable_styling(full_width = FALSE)
+```
+
+```{r}
+reg <- c("Arizona US", "Texas US", "Florida US")
+p <- popdata[match(reg, popdata$name),]
+b <- getsmoothts(world, reg)$smooth
+t1 <- p %>% group_by(name) %>% 
+  summarize(min.cases=min(population*per.100.state$positive.per.100/100),
+                                   max.cases=max(population*per.100.state$positive.per.100/100),
+                                   min.deaths=min(population*per.100.state$deaths.per.100/100),
+                                   median.deaths=median(population*per.100.state$deaths.per.100/100),
+                                   max.deaths=max(population*per.100.state$deaths.per.100/100))
+t2 <- b %>% group_by(region) %>% summarize(current.cases=max(positive, na.rm=TRUE),
+                                   current.deaths=max(death, na.rm=TRUE))
+state.est <- cbind(t2[,1:2],round(t1[2:3]),t2[,3],round(4/7*t1[,4:6]))
+
+reg <- epi.starting.names
+p <- popdata[match(reg, popdata$name),]
+b <- getsmoothts(world, reg)$smooth
+t1 <- p %>% group_by(name) %>% 
+  summarize(min.cases=min(population*per.100.city$positive.per.100/100),
+                                   max.cases=max(population*per.100.city$positive.per.100/100),
+                                   min.deaths=min(population*per.100.city$deaths.per.100/100),
+                                   median.deaths=median(population*per.100.city$deaths.per.100/100),
+                                   max.deaths=max(population*per.100.city$deaths.per.100/100))
+t2 <- b %>% group_by(region) %>% summarize(current.cases=max(positive, na.rm=TRUE),
+                                   current.deaths=max(death, na.rm=TRUE))
+urban.est <- cbind(t2[,1:2],round(t1[2:3]),t2[,3],round(4/7*t1[,4:6]))
+```
+
+The state estimates based on what NY, NJ, and MA experienced are `r round((state.est$min.deaths/state.est$current.deaths),digits=1)` times higher for AZ, FL, and TX than current deaths on the low end and `r round((state.est$max.deaths/state.est$current.deaths),digits=1)` times higher than current reported deaths on the high end. 
+```{r}
+knitr::kable(state.est, "html",
+             caption="<center><strong>Estimated mortalities based on epidemics in NY, NJ and MA</strong></center>") %>%
+  kableExtra::kable_styling(full_width = FALSE)
+```
+
+The metro county estimates (only deaths shown) based on what other metro counties have experienced are
+
+```{r}
+knitr::kable(urban.est[,c(1,5:8)], "html",
+             caption="<center><strong>Estimated mortalities based on epidemics in other metro counties</strong></center>") %>%
+  kableExtra::kable_styling(full_width = FALSE)
+```
+
+Here are the predicted deaths in graphical form.
+
+```{r}
+df <- state.est %>% pivot_longer(cols=current.deaths:max.deaths)
+ggplot(df,aes(x=region,y=value,fill=name))+
+  geom_bar(stat="identity",position="dodge")+
+  xlab("")+ylab("Deaths")+
+  ggtitle("Estimate of Deaths based on NE Epidemics")
+```
+

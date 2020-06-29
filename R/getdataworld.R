@@ -72,6 +72,8 @@ getdataworld <- function(){
       world <- rbind(world, x)
     }
     
+    # Fix that New York New York US is NYC (5 boroughs), not just Manhattan
+    levels(world$region)[which(levels(world$region)=="New York New York US")] <- "NYC New York US"    
     cat("Success! World data downloaded.\n")
     save(world, file="data/world.RData")
     invisible(world)

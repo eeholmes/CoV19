@@ -61,4 +61,11 @@ countypop <- countypop[-1,]
 countypop <- na.omit(countypop)
 df <- data.frame(name=countypop$region, population=countypop$population)
 popdata <- rbind(popdata, df)
+
+NYC<- paste(c("New York", "Kings", "Bronx", "Richmond", "Queens"), "New York US")
+df <- data.frame(name="NYC New York US", population=sum(popdata[popdata$name %in% NYC,]$population))
+popdata <- rbind(popdata, df)
+
 save(popdata, file="data/popdata.RData")
+
+

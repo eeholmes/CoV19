@@ -113,10 +113,10 @@ ggplot(b, aes(x=min.date, y=smooth.new.cases/popmill, color=region, linetype=wav
   annotate("text", x=-2, y=400, label="northeast lockdown", angle=90)
 ```
 
-However the epidemics in the northeast (and eastern midwest) were most severe in the big cities (number of deaths and deaths per million), with NYC being the worst hit by far with approximately 1.3% of the New York county population dying from Covid-19 in 100 days. Newark and Boston were not hit nearly as hard with 0.22% and 0.12% dying of Covid-19 in Essex and Suffolk counties.
+However the epidemics in the northeast (and eastern midwest) were most severe in the big cities (number of deaths and deaths per million), with death rates of 0.26% NYC, 0.25% Newark and ).12% Boston.
 
 ```{r}
-b <- getsmoothts(world, c("New York New York US", "Suffolk Massachusetts US", "Essex New Jersey US"))$smooth
+b <- getsmoothts(world, c("NYC New York US", "Suffolk Massachusetts US", "Essex New Jersey US"))$smooth
 tbl <- b %>% group_by(region) %>% summarize(death.per.100=max(death/(popmill*10000)))
 knitr::kable(tbl, "html") %>%
   kableExtra::kable_styling(full_width = FALSE)
@@ -145,21 +145,21 @@ epi.starting.names <- df.starting$region
 
 ```
 
-NYC was (and let's hope remains) an outlier. Let's look at all the counties over 750,000 people that experienced an epidemic and are now well past it with current new cases less than 10% of what they were at the peak. There are `r length(epi.done.names)` such counties representing the NYC Metro region including NJ, Boston Metro area, Detroit Metro area, and New Haven, CT. Chicago doesn't appear on this list as its epidemic has not reached 10% of its peak.
+Let's look at all the counties over 750,000 people that experienced an epidemic and are now well past it with current new cases less than 10% of what they were at the peak. There are `r length(epi.done.names)` such counties representing the NYC Metro region, Newark Metro region, Boston Metro area, Detroit Metro area, and New Haven, CT. Chicago doesn't appear on this list as its epidemic has not reached 10% of its peak. Note, the 5 NYC boroughs appear just as "NYC" in the table.
 
 ```{r}
 knitr::kable(df.done[order(df.done$max.pos, decreasing=TRUE),], "html") %>%
   kableExtra::kable_styling(full_width=FALSE)
 ```
 
-`r length(epi.starting.names)` metro regions have reached the threshold 200 new cases per day per million people: Phoenix, 8 counties in the Miami-Dade region, Houston, Dallas, San Antonio, Atlanta, and Memphis. Based on following the news, 200 is the threshold when many US metro county health systems are quite close to being full and the county needs to begin taking drastic actions to try to stop the spread of coronavirus. Houston (Harris County) announced that its hospitals had reached capacity at that threshold. San Antonio (Bexar County) sent an today that its hospitals are reaching capacity. Phoenix activated its hospital surge plans two days ago. Phoenix must have very high hospital capacity (or was doing extensive testing and catching many low-symtom cases) because it activated its surge plan when new cases per day per million was up above 300. Miami-Dade county must have even higher hospital capacity as [it is reporting](https://www.miamidade.gov/information/library/2020-06-28-new-normal-dashboard.pdf) 30% of hospital and ICU beds available even with new cases per day per million also above 300. However, I have reports of individual hospitals in South Florida having reach capacity.
+`r length(epi.starting.names)` new metro counties have reached the threshold 200 new cases per day per million people: Phoenix, 8 counties in the Miami-Dade region, Houston, Dallas, San Antonio, Atlanta (one county of it), Salt Lake City, and Memphis. Based on following the news, 200 is approximately the threshold when many US metro county health systems are quite close to being full and the county needs to begin taking strong actions to try to stop the spread of coronavirus. Houston (Harris County) announced that its hospitals had reached capacity at that threshold. San Antonio (Bexar County) sent an alert today that its hospitals are reaching capacity. Phoenix activated its hospital surge plans two days ago. Phoenix must have very high hospital capacity (or was doing extensive testing and catching many low-symptom cases) because it activated its surge plan when new cases per day per million was up above 300. Miami-Dade county must have even higher hospital capacity as [it is reporting](https://www.miamidade.gov/information/library/2020-06-28-new-normal-dashboard.pdf) 30% of hospital and ICU beds available even with new cases per day per million also above 300. However, I have reports of individual hospitals in South Florida having reach capacity.
 
 ```{r}
 knitr::kable(df.starting[,-3], "html") %>%
   kableExtra::kable_styling(full_width=FALSE)
 ```
 
-We can compare the 7-day average new cases per day per million people for these metropolitan counties to the counties with Phoenix, Houston, San Antonio and Miami. I have left off New York county, because its epidemic was unusually severe. The Phoenix, Houston, San Antonio and Miami lines are the solid line. It would appear, at this early stage, that these cities are following the pattern of the other cities that had epidemics and we can use that to make a guess at what's ahead in Florida, Arizona and Texas.
+We can compare the 7-day average new cases per day per million people for these metropolitan counties to the counties with Phoenix, Houston, San Antonio and Miami. The Phoenix, Houston, San Antonio and Miami lines are the solid line. It would appear, at this early stage, that these cities are following the pattern of the other cities that had epidemics and we can use that to make a guess at what's ahead in Florida, Arizona and Texas.
 
 ```{r}
 reg <- epi.done.names[-1]

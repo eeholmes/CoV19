@@ -26,3 +26,5 @@ Something is odd with the Hubei data in the JHU data set.
 ```{r, message=FALSE, warning=FALSE}
 plot2(world, "Hubei China", decorate=TRUE)
 ```
+
+

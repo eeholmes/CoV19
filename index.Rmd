@@ -20,3 +20,4 @@ install_github(eeholmes/CoV19)
 ```
 
 See the tabs for how to access the data and the plot functions.
+

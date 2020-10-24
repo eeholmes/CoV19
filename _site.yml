@@ -16,13 +16,9 @@ navbar:
       href: state_plots.html
     - text: "Lombardy WA"
       href: walomb_plot.html
-    - text: "NY"
-      href: ny_plot.html
-    - text: "CZ"
-      href: cz_plot.html
     - text: "CFR"
       href: CFR.html
-    - text: "Forecasts"
+    - text: "Cases and Deaths"
       href: Forecasts.html
     - text: "Updates"
       href: Updates.html

@@ -173,7 +173,7 @@ getfit <- function(x, posmin=100, maxh=200, fun="f2", s.fix=0.08, sig=0.05, fiti
 ```
 
 ```{r myfun}
-myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-15", maxdate="2020-09-01", bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05, fitit=TRUE, fil=7, sub=4){
+myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-15", maxdate="2020-12-01", bad.reg=NULL, fun="f2", s.fix=0.08, sig=0.05, fitit=FALSE, fil=7, sub=4){
   mindate <- as.Date(mindate)
   maxdate <- as.Date(maxdate)
   library(dplyr)
@@ -184,12 +184,14 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     # This will not have the region column, so we add that back on
   if(missing(regname)) regname <- paste(reg, collapse="+")
   b$region <- regname
+  b <- b[!is.na(b$positive),]
 
   #b<-subset(data, region==reg)
-  if(max(b$positive)<500) return()
+  if(max(b$positive, na.rm=TRUE)<500) return()
   day1 <- min(which(b$positive>posmin))
   
   b$new.cases <- c(NA, diff(b$positive))
+  b$new.deaths <- c(NA, diff(b$death))
   b$new.cases[b$new.cases<0] <- NA
   if(identical(reg, "Hubei China")) b$new.cases[b$new.cases>10000]=NA #hack 
   if(identical(reg, "France")) b$new.cases[b$new.cases>10000]=NA #hack
@@ -204,13 +206,19 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     bm <- 1.05*max(b$new.cases, na.rm=TRUE)
     popmill <- round(sum(popdata$population[match(unique(c(reg, regname)), popdata$name)], na.rm=TRUE)/1e6)
     cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
+    b2 <- subset(b, months(b$date) == "April")
+    cfr.apr <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
+    b2 <- subset(b, months(b$date) == "September")
+    cfr.sep <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
     p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
-      ggtitle(paste0(regname, "\n", "CFR Est = ",
-                    round(100*cfr,digits=2))) +
+      ggtitle(paste0(regname, "\n", "CFR Apr Est = ",
+                    round(100*cfr.apr,digits=2), "   CFR Sep Est = ",
+                    round(100*cfr.sep,digits=2))) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                    date_labels="%b")
-    p <- p + annotate("text", x=mindate+1, y=bm, label=paste(
-      "\nDeaths to date\n", max(b$death, na.rm=TRUE), " ", 
+    #y=bm
+    p <- p + annotate("text", x=mindate+1, y=Inf, label=paste(
+      "\n\nDeaths to date\n", max(b$death, na.rm=TRUE), " ", 
       round(max(b$death, na.rm=TRUE)/(popmill*1000), digits=2), "per thousand"), hjust=0)
     return(list(p=p, cfr=cfr))
   }
@@ -293,19 +301,10 @@ if(inherits(p, "list")){
 }
 ```
 
-## Hubei China
-
-```{r China-forecast}
-for(i in c("Hubei China")){
-  p <- myfun(world, i, posmin=100, maxh=150, mindate="2020-01-01", maxdate="2020-05-01")
-  if(inherits(p, "list")) plot(p$p)
-}
-```
-
 # European Countries
 
 ```{r worldplotfun}
-worldplot <- function(reg, posmin=100, maxh=150, fitit=TRUE){
+worldplot <- function(reg, posmin=100, maxh=150, fitit=FALSE){
 popmill <- round(sum(worldpop$PopTotal[match(reg, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
 p <- myfun(world, reg, posmin=posmin, maxh=maxh, fitit=fitit)
 if(inherits(p, "list")){
@@ -455,7 +454,7 @@ I have added a couple reference lines to the state plots. The average deaths per
 That translates to `10000 x pop size in millions / 365` deaths per million per day. I can translate new cases per million per day into future deaths per day using CFR. I put reference lines of 5% of normal deaths per million per day. Note Covid-19 deaths are heavily skewed to those over 70 and deaths rates for that age group is 2-4 times higher than the all-age groups rate. However, the denominator (millions of people age 70+) is even smaller, so actually if I tranlated this just to focus on those age 70+, it would look even worse.  Meaning the Covid-19 death rate relative to normal death rate would be higher. 
 
 ```{r stateplotfun}
-stateplot <- function(reg, posmin=100, maxh=150, fitit=TRUE, data="states"){
+stateplot <- function(reg, posmin=100, maxh=150, fitit=FALSE, data="states", ylims=c(0,1000)){
 #regfull <- state.name[match(reg, state.abb)]
 if(data=="states"){
   popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
@@ -470,8 +469,9 @@ if(inherits(p, "list")){
   onetoone <- ((10000*popmill/365)/(p$cfr))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
   p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
-  p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
- plot(p$p)
+  p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=popmill*ylims)
+ # plot(p$p)
+  p$p
 }
 }
 ```
@@ -485,7 +485,8 @@ stateplot(c("ME","VT","NH","MA","RI","CT"))
 ## Middle Atlantic
 
 ```{r states-forecast-mid-atlantic}
-stateplot(c("NY","NJ","PA"))
+p <- stateplot(c("NY","NJ","PA"))
+p
 ```
 
 
@@ -502,7 +503,8 @@ stateplot(c("MN", "MO", "ND", "SD", "IA", "NE", "KS"))
 ```
 
 ```{r states-forecast-wmid2}
-stateplot(c("IA", "NE"))
+p <- stateplot(c("ND", "SD")) 
+p + geom_vline(xintercept=as.Date("2020-08-12"))
 ```
 
 ## South Atlantic North
@@ -523,7 +525,7 @@ stateplot(c("GA", "FL", "SC", "NC"))
 
 
 ```{r states-forecast-eastsouth}
-stateplot(c("AL", "MS", "KY", "TN"), posmin=100)
+stateplot(c("AL", "MS", "KY", "TN"), posmin=100, fitit=FALSE)
 ```
 
 ## West South Central
@@ -608,13 +610,19 @@ popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NA
 
 ```{r states-forecast-northeast}
 for(i in c("NY", "NJ", "MA", "CT", "DE", "PA", "MD", "DC")){
-  stateplot(i, posmin=100)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
 ```{r states-forecast-north}
 for(i in c("ME", "NH", "VT")){
-  stateplot(i, posmin=100)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -624,7 +632,10 @@ for(i in c("ME", "NH", "VT")){
 
 ```{r states-forecast-southeast}
 for(i in c("FL", "VA", "SC", "NC", "GA")){
-  stateplot(i, posmin=10)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -632,7 +643,10 @@ for(i in c("FL", "VA", "SC", "NC", "GA")){
 
 ```{r states-forecast-south}
 for(i in c("TN", "KY", "AL", "MS", "AR", "LA")){
-  stateplot(i, posmin=10)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -640,7 +654,10 @@ for(i in c("TN", "KY", "AL", "MS", "AR", "LA")){
 
 ```{r states-forecast-midwest}
 for(i in c("OH", "MI", "IN", "IL")){
-  stateplot(i, posmin=100)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -648,13 +665,19 @@ for(i in c("OH", "MI", "IN", "IL")){
 
 ```{r states-forecast-cn}
 for(i in c("WI", "MN", "SD")){
-  stateplot(i, posmin=10)
+  p <- stateplot(i, posmin=10)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
 ```{r states-forecast-cn2}
 for(i in c("ND", "IA", "NE", "MO")){
-  stateplot(i, posmin=10)
+  p <- stateplot(i, posmin=10)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -663,7 +686,10 @@ for(i in c("ND", "IA", "NE", "MO")){
 
 ```{r states-forecast-westcoast}
 for(i in c("WA", "CA", "OR")){
-  stateplot(i)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -710,7 +736,10 @@ if(inherits(p, "list")){
 
 ```{r states-forecast-southcentral}
 for(i in c("TX", "OK", "KS")){
-  stateplot(i, posmin=10)
+  p <- stateplot(i, posmin=10)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -718,7 +747,10 @@ for(i in c("TX", "OK", "KS")){
 
 ```{r states-forecast-fourcorners}
 for(i in c("CO", "AZ", "UT", "NM", "NV")){
-  stateplot(i, posmin=100)
+  p <- stateplot(i, posmin=100)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```
 
@@ -726,6 +758,9 @@ for(i in c("CO", "AZ", "UT", "NM", "NV")){
 
 ```{r states-forecast-rockies}
 for(i in c("ID", "MT", "WY")){
-  stateplot(i, posmin=10)
+  p <- stateplot(i, posmin=10)
+  ym <- 500*popdata$population[popdata$name==i]/1e6
+  p <- p + geom_hline(yintercept=ym) + annotate("text", as.Date("2020-07-01"), y=1.05*ym, label="NY spring peak", color="blue")
+  plot(p)
 }
 ```

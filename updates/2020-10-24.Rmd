@@ -1,0 +1,202 @@
+---
+title: "Changing CFR over summer and fall"
+date: October 24, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.height=6)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+```{r child=file.path(here::here(), "updates/Forecast-Functions-2.Rmd")}
+```
+
+I stopped making my pandemic 'diary' entries in mid-July and it has now been 3 months. In mid-July, it became obvious, to me, that there would be no federal-level public health effort to limit the disease impacts in order to get us to spring 2021 (when we should have widespread vaccine access) with the least human health, economic and social impacts. In fact the executive-level messaging was actively working against the public health efforts at the state levels (in states with both Dem and GOP govenors). So by late summer, my pandemic diary was just depressing--so much avoidable human suffering.
+
+But I have been watching the numbers and literature pretty much every day and decided to do a short update on some things that I was curious about: how as the case fatality rate changed (that's todays update) and how did my [mid-July predictions](https://eeholmes.github.io/CoV19/updates/2020-06-28-AZ-TX-NJ.html) for AZ, FL and TX hold up. Those predictions were not based on a model but used the information from other states and metro regions that had gone through an epidemic to predict what would happen in AZ, FL and TX which were just starting. I'll post that one tomorrow.
+
+If you are interested in forecasts, go here https://www.cdc.gov/coronavirus/2019-ncov/covid-data/forecasting-us.html and here https://covid19forecasthub.org/ . The CDC has a page with links to many different groups (and individuals) doing forecasts and produces a state-by-state ensemble (meaning average across models) forecast. However the state-level ensemble forecast is not believable to me. Basically the ensemble weekly deaths forecast is just the average from the last 4 weeks even in states where there has been a huge surge in cases (e.g. ND, SD, MT, and ID). The US forecast seems pretty intuitive though. The US has been running about 10,000 deaths a week for the last two months and there is no indication of that getting better until we can get to widespread vaccination sometime in spring. 
+
+So far WA has been done a relatively good job of staying hunkered down and we are 41st in terms of deaths per million across the states. We are still dropping places as unfortunately Montana and Wisconsin are experiencing a surge in cases and deaths. But Thanksgiving is coming up. Washingtonians traveling outside of WA-OR will bring the virus back to us and this will cause many 'seeding' events.
+
+
+## Changes in Case Fatality Rate
+
+Case Fatality Rate (CFR) is not the mortality rate for people who become infected. CFR is just the reported deaths divided by the reported positive tests once an epidemic has run it's course. It's affected by testing rate, who gets tested (e.g. only those who show up at hospital, only symptomatic or broad testing), death reporting (e.g. what gets reported as a Covid-19 death and what are the lags in reporting). During an epidemic, the CFR can be estimated by dividing (weekly deaths this week)/(weekly positives some days prior). 7-day lag is what I use based on some [tests I did early in the pandemic]() and what I have seen recommended elsewhere. 
+
+I looked at [changing CFR in May](https://eeholmes.github.io/CoV19/updates/2020-05-06-Changing-CFR.html) but that analysis used the cumulative deaths and positives. Here I will use the (this weeks deaths)/(last weeks positives). It is more noisy but allows the CFR to change week by week.
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+```
+
+
+```{r}
+datL <- c()
+reg <- "Lombardia"
+  x<-subset(italy, region==reg)
+  x$new.death <- c(NA, diff(x$death))
+  x$new.positive <- c(NA, diff(x$positive))
+  x$cum.death <- stats::filter(x$new.death, rep(1, 7), sides=1)
+  x$cum.positive <- stats::filter(x$new.positive, rep(1, 7), sides=1)
+  for(lag in 0:10){
+    tmp <- data.frame(date=x$date[(1+lag):nrow(x)],
+                      x=x$death[(1+lag):nrow(x)],
+                      val= x$death[(1+lag):nrow(x)]/x$positive[1:(nrow(x)-lag)],
+                      cum.x=x$cum.death[(1+lag):nrow(x)],
+                      cum.val= x$cum.death[(1+lag):nrow(x)]/x$cum.positive[1:(nrow(x)-lag)],
+                      lag=lag, region=reg)
+    datL <- rbind(datL, tmp)
+  }
+  datL$lag <- as.factor(datL$lag)
+  datL$log.val <- log(datL$val)
+  datL$log.cum.val <- log(datL$cum.val)
+  
+```
+
+## Europe
+
+This plot shows how the CFR (7-day lag) has changed week to week in Lombardia, Italy. Here a week of deaths is compared to a week of positives 7 days prior. We see that the 7-day lag CFR was steadily decreasing even while the hospitals became overwhelmed. Doctors (presumably) got better at treating CoVid-19. I say "presumably" since it is known that treatment did improve (less reliance on ventilators and more on high levels of oxygen) and there is no evidence (reported in the scientific literature that I have seen) that the virus has evolved to be less lethal.  We also see that since sometime in August 2020 the CFR stabilized around 1-2% of reported positives.
+```{r}
+reg <- "Lombardia"
+p <- ggplot(subset(datL, region==reg & lag%in%c(7)), aes(x=date,y=log.cum.val, color=lag)) + geom_line() + geom_point() +
+  ggtitle(paste(reg, "7-day CFR")) +
+  xlab("Cumulative Deaths") +
+  scale_y_continuous(name="lagged CFR", breaks=-6:0, 
+                     labels=round(exp(-6:0),digits=2), limits=c(-6,0))
+p
+```
+
+```{r}
+dat <- c()
+for(reg in c("Italy","France","Canada", "US","Spain","United Kingdom","Austria","Germany", "Switzerland", "Greece", "Portugal", "Sweden", "Denmark", "Belgium", "Netherlands", "Iran", "China", "Czechia", "Poland")){
+x<-subset(world, region==reg)
+  x$new.death <- c(NA, diff(x$death))
+  x$new.positive <- c(NA, diff(x$positive))
+  x$cum.death <- stats::filter(x$new.death, rep(1, 7), sides=1)
+  x$cum.positive <- stats::filter(x$new.positive, rep(1, 7), sides=1)
+  for(lag in 0:10){
+    tmp <- data.frame(date=x$date[(1+lag):nrow(x)],
+                      x=x$death[(1+lag):nrow(x)],
+                      val= x$death[(1+lag):nrow(x)]/x$positive[1:(nrow(x)-lag)],
+                      cum.x=x$cum.death[(1+lag):nrow(x)],
+                      cum.val= x$cum.death[(1+lag):nrow(x)]/x$cum.positive[1:(nrow(x)-lag)],
+                      lag=lag, region=reg)
+    dat <- rbind(dat, tmp)
+  }
+}
+dat$lag <- as.factor(dat$lag)
+dat$log.val <- log(dat$val)
+dat$log.cum.val <- log(dat$cum.val)
+```
+
+```{r}
+plotfun <- function(dat, reg, ylims, lags=c(0,3,5,7,10), xlims=c(100,5000)){
+  dat <- subset(dat, date <= as.Date("2020-06-01"))
+  val1 <- subset(dat, region==reg & lag==5)$val
+val1 <- 100*round(mean(val1[(length(val1)-3):length(val1)]),digits=3)
+val2 <- subset(dat, region==reg & lag==7)$val
+val2 <- 100*round(mean(val2[(length(val2)-3):length(val2)]),digits=3)
+p <- ggplot(subset(dat, region==reg & lag%in%lags), aes(x=x,y=log.val,color=lag)) + geom_line() + geom_point() +
+  ggtitle(paste0(reg," ",val1," to ", val2,"%")) +
+  xlab("Cumulative Deaths up to June 1") +
+  scale_y_continuous(name="lagged CFR", breaks=ylims[1]:ylims[2], 
+                     labels=round(exp(ylims[1]:ylims[2]),digits=2), limits=ylims)
+p
+}
+plotcumfun <- function(dat, reg, ylims, lags=7){
+p <- ggplot(subset(dat, region==reg & lag%in%lags), aes(x=date,y=log.cum.val,color=lag)) + geom_point() +
+  ggtitle(reg) +
+  xlab("") +
+  scale_y_continuous(name="lagged CFR", breaks=ylims[1]:ylims[2], 
+                     labels=round(exp(ylims[1]:ylims[2]),digits=2), limits=ylims)
+p
+}
+```
+
+Italy (country-wide) and France show a similar pattern: dropping CFR through the summer and now around 1%.
+
+```{r}
+reg <- "Italy"
+p1 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+reg <- "France"
+p2 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+gridExtra::grid.arrange(p1,p2, nrow=1)
+```
+
+Spain is an interesting case with a big drop in the CFR in June. In October as cases have skyrocketed back up in Spain, the CFR has risen to ca 1.5%. United Kingdom, same pattern. CFR dropped steadily through late summer and is now steady at near 1%.
+
+```{r}
+reg <- "Spain"
+p1 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+reg <- "United Kingdom"
+p2 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+gridExtra::grid.arrange(p1,p2, nrow=1)
+```
+
+The Czech Republic and Poland are cases where the country avoided the spring waves but are now experiencing the highest per capita infection rates in Europe. Mortality was also quite low for their small spring waves. The fall CFR for the Czech Republic is currently similar to the rest of Europe at about 1.5% while that in Poland is above 2%.
+
+```{r}
+reg <- "Czechia"
+p1 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+reg <- "Poland"
+p2 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+gridExtra::grid.arrange(p1,p2, nrow=1)
+```
+
+
+## US CFR
+
+The CFR was much lower in the US versus Europe in the spring wave, closer 5% versus the 7-10+% that was seen in western European countries. We see the same pattern of a declining weekly CFR over summer, again presumably as doctors figured out how to treat patients better. Now as we enter the big fall/winter wave, the CFR has leveled out at about 1.5-2.5%, so a bit higher than in Europe. That doesn't mean higher mortality; it could be differences in who gets tested.
+
+```{r}
+reg <- "US"
+p1 <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+p1
+```
+
+The US numbers are the sum across very diverse states, each of which is handling reporting at different levels and which have different testing levels. However the general patterns are quite similar across states. The fall-early winter CFR is running about 1-2.5% across states, with most near 2%. 
+
+```{r}
+datS <- c()
+for(reg in c("OK","NV","NY","NJ","WA","CA","LA","MI","ND","FL","GA","TX","WI","AL","MT","AZ","TN","AL","MA","MD","IL","KS","IA")){
+x<-subset(states, region==reg)
+  x$new.death <- c(NA, diff(x$death))
+  x$new.positive <- c(NA, diff(x$positive))
+  x$cum.death <- stats::filter(x$new.death, rep(1, 7), sides=1)
+  x$cum.positive <- stats::filter(x$new.positive, rep(1, 7), sides=1)
+  for(lag in 0:15){
+    tmp <- data.frame(date=x$date[(1+lag):nrow(x)],
+                      x=x$death[(1+lag):nrow(x)],
+                      val= x$death[(1+lag):nrow(x)]/x$positive[1:(nrow(x)-lag)],
+                      cum.x=x$cum.death[(1+lag):nrow(x)],
+                      cum.val= x$cum.death[(1+lag):nrow(x)]/x$cum.positive[1:(nrow(x)-lag)],
+                      lag=lag, region=reg)
+    datS <- rbind(datS, tmp)
+  }
+}
+datS$lag <- as.factor(datS$lag)
+datS$region <- as.factor(datS$region)
+datS$log.val <- log(datS$val)
+datS$log.cum.val <- log(datS$cum.val)
+```
+
+```{r}
+lag <- 7
+pl <- list()
+for (reg in c("NY", "FL", "AL", "AZ", "MI", "WI", "ND", "CA","WA"))
+  pl[[reg]] <-plotcumfun(datS, reg, c(-6,0), lags=lag)+ theme(legend.position = "none")
+gridExtra::grid.arrange(grobs=pl, ncol=3)
+```
+
+## Bottom-line
+
+The CFR has definitely declined. Hospitalization rates are not consistently reported so we don't know if that has changed. Right now states are reporting fairly consistent 1-2.5% CFR, so you can do a quick back of the envelope calculation of future deaths from the daily reported positives by dividing by 100 and multiplying by 2.

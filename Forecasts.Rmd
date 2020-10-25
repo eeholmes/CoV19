@@ -1,5 +1,5 @@
 ---
-title: "Forecasts version 3"
+title: "Cases and Deaths"
 date: "`r format(Sys.time(), '%A %b %d, %Y %r')`"
 ---
 
@@ -13,13 +13,15 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-These are forecast by fitting a log-normal shape curve the new positive cases and estimating deaths using the 7-lag CFR.  The 95% confidence intervals on the forecasts are shown. 
+Oct 2020: I removed the forecasts, which were based on fitting a log-normal shape curve. That approach worked for epidemics that were contained but not for the sputtering continuous spread observed in many US states.
 
-These are just toy forecasts to try to understand the behavior of statistical forecasts using only a log-normal fit to new cases.  This is somewhat similar to the strategy used in the [UW model](https://covid19.healthdata.org/) except they fit to deaths and I am fitting to a 7-day average of reported positives (I had been using 3-day previously but switched to 7-day on May 1).
+<!-- These are forecast by fitting a log-normal shape curve the new positive cases and estimating deaths using the 7-lag CFR.  The 95% confidence intervals on the forecasts are shown.  -->
 
-These are just experiments to understand the nature of these kind of fits.  Don't put any stock whatsoever into these 'forecasts'. If the new cases are still going up exponentially, then the model has no information about where the peak might be and the model cannot fit. In that case, I show the new cases only.
+<!-- These are just toy forecasts to try to understand the behavior of statistical forecasts using only a log-normal fit to new cases.  This is somewhat similar to the strategy used in the [UW model](https://covid19.healthdata.org/) except they fit to deaths and I am fitting to a 7-day average of reported positives (I had been using 3-day previously but switched to 7-day on May 1). -->
 
-If the model fits, then the blue dots are the smoothed (7-day average) new cases to which the model was fit.
+<!-- These are just experiments to understand the nature of these kind of fits.  Don't put any stock whatsoever into these 'forecasts'. If the new cases are still going up exponentially, then the model has no information about where the peak might be and the model cannot fit. In that case, I show the new cases only. -->
+
+<!-- If the model fits, then the blue dots are the smoothed (7-day average) new cases to which the model was fit. -->
 
 ```{r thenormfuncs}
 # estimate mu, sigma and scaling

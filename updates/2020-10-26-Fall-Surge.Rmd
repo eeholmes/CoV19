@@ -1,0 +1,262 @@
+---
+title: "Regional US Patterns"
+date: May 25, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r child=file.path(here::here(), "updates/Forecast-Functions-3.Rmd")}
+```
+
+```{r Lomb-forecast}
+reg <- "Lombardia"
+p <- myfun(italy, reg)
+popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
+if(inherits(p, "list")){
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
+  p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits = c(0,1000*popmill))
+ lomb <- p$p
+}
+```
+
+
+
+```{r  Scandinavia-forecast}
+i<- "Norway"
+norway <- worldplot(i)
+
+i<- "Sweden"
+sweden <- worldplot(i)
+
+```
+
+```{r  UK-forecast}
+i <- "United Kingdom"
+uk <-  worldplot(i)
+
+i <- "Ireland"
+ireland <- worldplot(i)
+```
+
+```{r  Germanic-forecast}
+i <- "Belgium"
+belgium <- worldplot(i)
+
+i <- "Netherlands"
+netherlands <- worldplot(i)
+
+i <- "Switzerland"
+switzerland <- worldplot(i)
+```
+
+```{r  Germany-forecast}
+i="Germany"
+germany <- worldplot(i)
+```
+
+```{r  CEurope-forecast}
+i <- "Czechia"
+czechia <-  worldplot(i)
+
+i <- "Poland"
+poland <- worldplot(i)
+```
+
+```{r  Austria-forecast}
+i="Austria"
+austria <- worldplot(i)
+```
+
+
+```{r  SEurope-forecast}
+i <- "France"
+france <- worldplot(i)
+
+i <- "Italy"
+italyp <- worldplot(i)
+
+i <- "Spain"
+spain <- worldplot(i)
+
+i <- "Portugal"
+portugal <-  worldplot(i)
+```
+
+```{r  Balkans-forecast}
+i <- "Slovenia"
+slovenia <- worldplot(i)
+
+i <- "Greece"
+greece <- worldplot(i)
+```
+
+# Europe
+
+## Italy, Spain and Portugal
+
+```{r}
+grid.arrange(lomb, italyp, spain, portugal)
+```
+
+## France, Belgium, Netherlands, United Kingdom
+
+```{r}
+pl <- list()
+for( i in c("France", "Netherlands", "Belgium", "United Kingdom")) pl[[i]] <- worldplot(i)
+grid.arrange(grobs = pl)
+```
+
+## Germany, Austria, Switzerland, Luxembourg
+
+```{r}
+pl <- list()
+for( i in c("Germany", "Austria", "Switzerland", "Luxembourg")) pl[[i]] <- worldplot(i)
+grid.arrange(grobs = pl)
+```
+
+## Sweden, Norway, Finland, Denmark
+
+```{r}
+pl <- list()
+for( i in c("Sweden", "Norway", "Finland", "Denmark")) pl[[i]] <- worldplot(i)
+grid.arrange(grobs = pl)
+```
+
+## Poland, Czechia, Slovakia, Hungary
+
+```{r}
+pl <- list()
+for( i in c("Poland", "Czechia", "Slovakia", "Hungary")) pl[[i]] <- worldplot(i)
+grid.arrange(grobs = pl)
+```
+
+## Canada
+
+Canada did have much of a spring wave, except in Quebec. Fall cases are higher than what was seen in spring but still relatively low.
+
+```{r}
+pl <- list()
+for( i in c("Ontario Canada", "Quebec Canada", "British Columbia Canada", "Alberta Canada")) pl[[i]] <- worldplot(i)
+grid.arrange(grobs = pl)
+```
+
+# United States
+
+So many European countries are beginning or well into a fall surge in cases. How does the US look?
+
+
+## Context
+
+Before showing current cases per million. Here are the plots for some US counties where the local hospitals hit 100% capacity during a surge in cases. El Paso hospitals hit 100% for the ICU units on Oct 25th. So 750 cases per million appears to be a crisis number at the county level.
+
+```{r hot-counties}
+grid.arrange(worldplot("Bronx New York US"),
+             worldplot("Queens New York US"),
+             worldplot("Miami-Dade Florida US"),
+             worldplot("El Paso Texas US"))
+```
+
+At the state level, these plots are averaging over counties with higher and lower cases per million but 500 appears to be a crisis number at the state level. There are 6 states that hit or got very close to a 3 day average of 500 new cases per million: NY, NJ, MS, LA, AZ and FL. This is a level where even state governments inclined not to close businesses will do so. At least that's my read based on following the news and watching when GOP state governors shut down bars and gyms down.
+
+```{r hot-states}
+grid.arrange(stateplot("NY"),
+             stateplot("NJ"),
+             stateplot("AZ"),
+             stateplot("FL"))
+```
+
+# Hotspots
+
+The mountain west and Wisconsin are currently experiencing surges above 500 new cases per million and even above 750 in ND and SD.
+
+```{r states-forecast-hot}
+grid.arrange(stateplot(c("ND","SD")), stateplot("WY"), stateplot("MT"), stateplot("WI"))
+```
+
+# Regional Trends
+
+The regional trends are averaged over states with lower current cases and those with higher. They give a bit of a rosy picture with new cases per million generally below 250. However the surges that European countries are facing should caution against complacency and show how fast cases can rise.
+
+```{r states-forecast-westnosocal}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+cacounties <- unique(world$region[str_detect(world$region, "California")])
+ncacounties <- cacounties[!cacounties %in% reg & 
+                            !cacounties=="California US" & 
+                            !cacounties=="Out of CA California US" &
+                            !cacounties=="Unassigned California US"]
+ncacounties <- as.character(ncacounties)
+p <- myfun(world, c("Washington US", "Oregon US", ncacounties), regname="WA+OR+NorCal", posmin=100, maxh=150)
+popmill <- sum(statepop$POPESTIMATE2019[match(c("Washington", "Oregon"), statepop$NAME)], na.rm=TRUE)+0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]
+popmill <- round(popmill/1e6, digits=2)
+if(inherits(p, "list")){
+  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=c(0,1000*popmill))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+    geom_hline(yintercept=750*popmill, color="red") +
+    geom_hline(yintercept=500*popmill, color="blue")
+northwest <- p$p
+}
+```
+
+
+```{r states-forecast-southca}
+reg <- c("San Diego California US",
+         "San Bernardino California US",
+         "Riverside California US",
+         "Orange California US",
+         "Los Angeles California US",
+         "Ventura California US",
+         "Kern California US",
+         "Santa Barbara California US",
+         "San Luis Obispo California US")
+p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
+if(inherits(p, "list")){
+popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=c(0,1000*popmill))
+  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+    geom_hline(yintercept=750*popmill, color="red") +
+    geom_hline(yintercept=500*popmill, color="blue")
+  socal <- p$p
+}
+```
+
+
+
+```{r states-forecast-emid}
+midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))
+midwest2 <- stateplot(c("MN", "MO", "ND", "SD", "IA", "NE"))
+southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
+eastsouth <- stateplot(c("AL", "MS", "GA", "TN"))
+grid.arrange(midwest1, midwest2, southatlantic, eastsouth)
+```
+
+```{r states-forecast-sw}
+mtnwest <- stateplot(c("CO", "UT", "NM", "AZ", "NV"))
+southcentral <- stateplot(c("TX", "OK", "KS", "AR"))
+grid.arrange(mtnwest, southcentral, northwest, socal)
+```
+
+```{r states-forecast-others}
+mtnnorth <- stateplot(c("ID", "MT", "WY"))
+grid.arrange(mtnnorth, stateplot("HI"), stateplot("AK"), stateplot("WA"))
+```
+
+
+## Summary 
+
+Overall, it still looks like the first wave will last well into summer for most of the US (excluding part of the NE) but new cases per million is staying relatively low.

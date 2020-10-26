@@ -1,6 +1,6 @@
 ---
-title: "Regional US Patterns"
-date: May 25, 2020
+title: "Fall Surge"
+date: Oct 26, 2020
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +21,6 @@ reg <- "Lombardia"
 p <- myfun(italy, reg)
 popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
 if(inherits(p, "list")){
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits = c(0,1000*popmill))
  lomb <- p$p
 }
@@ -206,7 +205,7 @@ popmill <- sum(statepop$POPESTIMATE2019[match(c("Washington", "Oregon"), statepo
 popmill <- round(popmill/1e6, digits=2)
 if(inherits(p, "list")){
   p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=c(0,1000*popmill))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+  p$p <- p$p+
     geom_hline(yintercept=750*popmill, color="red") +
     geom_hline(yintercept=500*popmill, color="blue")
 northwest <- p$p
@@ -228,7 +227,7 @@ p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
 if(inherits(p, "list")){
 popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=c(0,1000*popmill))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+  p$p <- p$p+
     geom_hline(yintercept=750*popmill, color="red") +
     geom_hline(yintercept=500*popmill, color="blue")
   socal <- p$p
@@ -236,13 +235,19 @@ popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NA
 ```
 
 
+```{r newengland}
+newengland <- stateplot(c("ME","VT","NH","MA","RI","CT"))
+midatlantic <- stateplot(c("NY","NJ","PA"))
+southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
+southsea <- stateplot(c("NC", "SC", "GA", "FL"))
+grid.arrange(newengland, midatlantic, southatlantic, southsea)
+```
 
 ```{r states-forecast-emid}
 midwest1 <- stateplot(c("OH", "IN", "IL", "WI", "MI"))
 midwest2 <- stateplot(c("MN", "MO", "ND", "SD", "IA", "NE"))
-southatlantic <- stateplot(c("DC", "DE", "VA", "WV", "MD"))
-eastsouth <- stateplot(c("AL", "MS", "GA", "TN"))
-grid.arrange(midwest1, midwest2, southatlantic, eastsouth)
+eastsouth <- stateplot(c("AL", "MS", "KY", "TN"))
+grid.arrange(midwest1, midwest2, eastsouth, nrow=2)
 ```
 
 ```{r states-forecast-sw}
@@ -259,4 +264,4 @@ grid.arrange(mtnnorth, stateplot("HI"), stateplot("AK"), stateplot("WA"))
 
 ## Summary 
 
-Overall, it still looks like the first wave will last well into summer for most of the US (excluding part of the NE) but new cases per million is staying relatively low.
+Overall, it feels to me like the calm before the surge. In Europe, the surge has come on very fast. It is hard to see any warning in the positive numbers.

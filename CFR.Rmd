@@ -140,7 +140,17 @@ p1 <- plotfun(dat, reg, c(-4,0))
 p1b <- plotcumfun(dat, reg, c(-6,-1), lags=5)
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
+Belgium.
+
+```{r}
+reg <- "Belgium"
+p1 <- plotfun(dat, reg, c(-4,0))
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+gridExtra::grid.arrange(p1,p1b, nrow=1)
+```
+
 Spain is an interesting case with a big drop in the CFR in June. In October as cases have skyrocketed back up in Spain, the CFR has risen to ca 1.5%.
+
 
 ```{r}
 reg <- "Spain"

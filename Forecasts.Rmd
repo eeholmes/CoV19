@@ -196,8 +196,8 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
   b$new.deaths <- c(NA, diff(b$death))
   b$new.cases[b$new.cases<0] <- NA
   if(identical(reg, "Hubei China")) b$new.cases[b$new.cases>10000]=NA #hack 
-  if(identical(reg, "France")) b$new.cases[b$new.cases>10000]=NA #hack
-  if(identical(reg, "Hungary")) b$new.cases[b$new.cases>200]=NA #hack
+  #if(identical(reg, "France")) b$new.cases[b$new.cases>10000]=NA #hack
+  #if(identical(reg, "Hungary")) b$new.cases[b$new.cases>200]=NA #hack
   cfr <- mean(b$death[(nrow(b)-5):nrow(b)]/b$positive[(nrow(b)-5-7):(nrow(b)-7)], na.rm=TRUE)
   
   fit <- getfit(b, posmin=posmin, maxh=maxh,
@@ -212,10 +212,13 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     cfr.apr <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
     b2 <- subset(b, months(b$date) == "September")
     cfr.sep <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
+    b2 <- subset(b, months(b$date) == "October")
+    cfr.oct <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
     p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
-      ggtitle(paste0(regname, "\n", "CFR Apr Est = ",
-                    round(100*cfr.apr,digits=2), "   CFR Sep Est = ",
-                    round(100*cfr.sep,digits=2))) +
+      ggtitle(paste0(regname, "\n", "CFR Apr = ",
+                    round(100*cfr.apr,digits=2), "  CFR Sep = ",
+                    round(100*cfr.sep,digits=2), "  CFR Oct = ",
+                    round(100*cfr.oct,digits=2))) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                    date_labels="%b")
     #y=bm
@@ -307,7 +310,7 @@ if(inherits(p, "list")){
 
 ```{r worldplotfun}
 worldplot <- function(reg, posmin=100, maxh=150, fitit=FALSE){
-popmill <- round(sum(worldpop$PopTotal[match(reg, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)
 p <- myfun(world, reg, posmin=posmin, maxh=maxh, fitit=fitit)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
@@ -331,7 +334,7 @@ p <- myfun(world, i, posmin=100, maxh=150)
 if(inherits(p, "list")){ 
   p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-15")); 
   p$p <- p$p+annotate("text", x=as.Date("2020-04-15"), y=1, label="primary schools open", hjust=0)
-  popmill <- round(sum(worldpop$PopTotal[match(i, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+  popmill <- round(sum(popdata$population[match(i, popdata$name)], na.rm=TRUE)/1e6, digits=2)
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
     scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p 
@@ -363,7 +366,7 @@ p <- myfun(world, i, posmin=100, maxh=150)
 if(inherits(p, "list")){ 
   p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-20")); 
   p$p <- p$p+annotate("text", x=as.Date("2020-04-20"), y=1, label="opening small shops", hjust=0)
-  popmill <- round(sum(worldpop$PopTotal[match(i, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+  popmill <- round(sum(popdata$population[match(i, popdata$name)], na.rm=TRUE)/1e6, digits=2)
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
     scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p 
@@ -384,7 +387,7 @@ p <- myfun(world, i, posmin=100, maxh=150)
 if(inherits(p, "list")){ 
   p$p <- p$p+geom_vline(xintercept = as.Date("2020-04-14")); 
   p$p <- p$p+annotate("text", x=as.Date("2020-04-14"), y=1, label="opening small shops", hjust=0)
-  popmill <- round(sum(worldpop$PopTotal[match(i, worldpop$Location)], na.rm=TRUE)/1e6, digits=2)
+  popmill <- round(sum(popdata$population[match(i, popdata$name)], na.rm=TRUE)/1e6, digits=2)
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p 
   }
@@ -429,7 +432,7 @@ for(i in c("Japan", "India", "Pakistan")){
 ## North America
 
 ```{r NAmer-forecast1}
-for(i in c("US", "Canada")){
+for(i in c("US", "Canada", "Ontario Canada", "Quebec Canada")){
   worldplot(i)
 }
 ```
@@ -451,9 +454,6 @@ for(i in c("Brazil", "Chile", "Argentina")){
 
 ## US States
 
-I have added a couple reference lines to the state plots. The average deaths per year in the US (all age groups) is roughly 10,000 per million (roughly 1% of population per year), obviously it higher in some states than others but for now I am not downloading the state by state info on that. 
-
-That translates to `10000 x pop size in millions / 365` deaths per million per day. I can translate new cases per million per day into future deaths per day using CFR. I put reference lines of 5% of normal deaths per million per day. Note Covid-19 deaths are heavily skewed to those over 70 and deaths rates for that age group is 2-4 times higher than the all-age groups rate. However, the denominator (millions of people age 70+) is even smaller, so actually if I tranlated this just to focus on those age 70+, it would look even worse.  Meaning the Covid-19 death rate relative to normal death rate would be higher. 
 
 ```{r stateplotfun}
 stateplot <- function(reg, posmin=100, maxh=150, fitit=FALSE, data="states", ylims=c(0,1000)){
@@ -468,9 +468,6 @@ p <- myfun(world, reg2, regname=paste(reg, collapse="+"), posmin=posmin, maxh=ma
 }
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  onetoone <- ((10000*popmill/365)/(p$cfr))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=popmill*ylims)
  # plot(p$p)
   p$p
@@ -575,9 +572,6 @@ popmill <- round(popmill/1e6, digits=2)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
-  onetoone <- ((10000*popmill/365)/(p$cfr))
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
 plot(p$p)
 }
 ```
@@ -599,8 +593,6 @@ if(inherits(p, "list")){
 popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   plot(p$p)
 }
 ```
@@ -711,8 +703,6 @@ if(inherits(p, "list")){
   popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   plot(p$p)
 }
 ```
@@ -728,8 +718,6 @@ if(inherits(p, "list")){
   popmill <- round(0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
     p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=.05*onetoone, label=paste("5%"), hjust=1, vjust=-1)
-  p$p <- p$p+geom_hline(yintercept = .05*onetoone, col="pink"); 
   plot(p$p)
 }
 ```

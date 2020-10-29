@@ -344,10 +344,17 @@ if(inherits(p, "list")){
 ## British Isles
 
 ```{r  UK-forecast}
-for(i in c("Ireland", 
-           "United Kingdom")){
-  worldplot(i)
-}
+i="Ireland"
+p <- myfun(world, i, posmin=100, maxh=150)
+p$p <- p$p+geom_vline(xintercept = as.Date("2020-10-21")); 
+p$p <- p$p+annotate("text", x=as.Date("2020-10-21"), y=1, label="fall 6-wk lockdown", hjust=0)
+popmill <- round(sum(popdata$population[match(i, popdata$name)], na.rm=TRUE)/1e6, digits=2)
+p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2) +
+    scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p 
+
+i <- "United Kingdom"
+worldplot(i)
 ```
 
 ## Germany and Benelux

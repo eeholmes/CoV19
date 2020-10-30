@@ -1,0 +1,63 @@
+---
+title: "Changing Positivity"
+date: Oct 30, 2020
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6)
+```
+
+John Hopkins shows the current positivity calculation by state here: https://coronavirus.jhu.edu/testing/testing-positivity
+I wanted to see how the 7-day positivity has been changing over time and what the increases looks like (i.e. how fast does it go up when it starts going up?). The plots below show the changing 7-day average positivity rates by state and region. Note, states report total tests differently. My plots calculate the positivity using the same data as the John Hopkins page. Blue line shows 5% positivity and red line shows 10% positivity.
+
+Summary: Midwest is not good. Montana, Wyoming, Idaho and Utah are not good and Arizona, Nevada, Colorado and New Mexico, while lower in positivity, have shown a steady increase in positivity over the last 4 weeks. Northeast, whole Atlantic coast states and west coast states are mostly holding steady however. South is mixed. The testing data is mixed and noisy. 
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(CoV19)
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r child=file.path(here::here(), "updates/Forecast-Functions-3.Rmd")}
+```
+
+```{r}
+library(dplyr)
+fil <- 7
+b <- subset(states, region %in% state.abb & date>as.Date("2020-08-01"))
+b$region <- factor(b$region) # get rid of extra levels
+b <- b %>% group_by(region) %>% mutate(new.cases = c(NA, diff(positive)))
+b$new.cases[b$new.cases<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.cases = as.vector(stats::filter(new.cases, rep(1/fil,fil))))
+b <- b %>% group_by(region) %>% mutate(new.tests = c(NA, diff(total.tests)))
+b$new.tests[b$new.tests<0] <- NA
+b <- b %>% group_by(region) %>% mutate(smooth.new.tests = as.vector(stats::filter(new.tests, rep(1/fil,fil))))
+```
+# All States
+
+```{r}
+ggplot(subset(b, date>as.Date("2020-08-01") & region%in%state.abb), aes(x=date, y=smooth.new.cases/smooth.new.tests)) +
+  geom_line() + facet_wrap(~region) + geom_hline(yintercept=0.05, color="blue") +
+  geom_hline(yintercept=0.1, color="red") + ylim(c(0,0.5)) +
+  scale_x_date(date_labels = "%b", date_breaks="1 months") +
+  ggtitle("7-day average positivity") + ylab("7-day positivity (positives/total tests)") + xlab("")
+```
+
+# Regions
+
+
+```{r}
+for(reg in abb.names2){
+  bb <- subset(b, region %in% get(reg))
+p <- ggplot(subset(bb, date>as.Date("2020-08-01") & region%in%state.abb), aes(x=date, y=smooth.new.cases/smooth.new.tests)) +
+  geom_line() + facet_wrap(~region) + geom_hline(yintercept=0.05, color="blue") +
+  geom_hline(yintercept=0.1, color="red") + ylim(c(0,0.5)) +
+  scale_x_date(date_labels = "%b", date_breaks="1 months") +
+  ggtitle(paste(reg, "7-day average positivity")) +
+  ylab("7-day positivity (positives/total tests)") + xlab("")
+plot(p)
+}
+```
+
+
+

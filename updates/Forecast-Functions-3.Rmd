@@ -13,6 +13,26 @@ library(ggplot2)
 library(gridExtra)
 ```
 
+```{r statedefs}
+abb.names1 <- c("newengland.abb", "midatlantic.abb", "encentralmidwest.abb", "wncentralmidwest.abb",
+               "nsatlantic.abb", "ssatlantic.abb", "south.abb", "mtnnorth.abb", "mtnsw.abb", "westcoast.abb")
+abb.names2 <- c("northeast.abb", "atlantic.abb", "midwest.abb", "south.abb", "west.abb")
+newengland.abb <- c("ME","VT","NH","MA","RI","CT")
+midatlantic.abb <- c("NY","NJ","PA")
+encentralmidwest.abb <- c("OH", "IN", "IL", "WI", "MI")
+wncentralmidwest.abb <- c("MN", "MO", "ND", "SD", "IA", "NE", "KS")
+nsatlantic.abb <- c("DC", "DE", "VA", "WV", "MD")
+ssatlantic.abb <- c("GA", "FL", "SC", "NC")
+south.abb <- c("AL", "MS", "KY", "TN", "TX", "OK", "AR","LA")
+mtnnorth.abb <- c("ID", "MT", "WY")
+mtnsw.abb <- c("CO", "UT", "NV", "NM", "AZ")
+westcoast.abb <- c("WA", "OR", "CA")
+west.abb <- c(mtnnorth.abb, mtnsw.abb, westcoast.abb)
+midwest.abb <- c(encentralmidwest.abb, wncentralmidwest.abb)
+atlantic.abb <- c(nsatlantic.abb, ssatlantic.abb)
+northeast.abb <- c(newengland.abb, midatlantic.abb)
+```
+
 ```{r thenormfuncs}
 # estimate mu, sigma and scaling
 f2<-function(x, theta) {

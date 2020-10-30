@@ -4,6 +4,7 @@ title: "Updates"
 
 An applied mathematician's pandemic diary. 
 
+* October 30, 2020 [Changing Positivity](updates/2020-10-30-Changing-Positivity.html)
 * October 29, 2020 [Fall Surge](updates/2020-10-26-Fall-Surge.html)
 * October 24, 2020 [Changing CFR over the Summer](updates/2020-10-24.html)
 * June 28, 2020 [Arizona, Texas and Florida](updates/2020-06-28-AZ-TX-NJ.html)

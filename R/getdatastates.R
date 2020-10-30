@@ -17,13 +17,13 @@ getdatastates <- function(json=TRUE){
       statedata <- try(jsonlite::fromJSON("https://covidtracking.com/api/v1/states/daily.json"))
     }
     colnames(statedata)[colnames(statedata)=="state"] <- "region"
-    colnames(statedata)[colnames(statedata)=="total"] <- "total.tests"
+    colnames(statedata)[colnames(statedata)=="totalTestResults"] <- "total.tests"
     if(!inherits(statedata, "try-error")){
       statedata <- statedata[,colnames(statedata)!="dateChecked"]
       statedata$date <- as.Date(as.character(statedata$date), "%Y%m%d")
       states <- statedata
       # If nothing has changed then data were not updated
-      cols <- c("positive", "negative", "pending", "hospitalized", "death", "total.tests")
+      cols <- c("positive", "negative", "pending", "hospitalizedCumulative", "death", "total.tests")
       for(reg in state.abb){
         test <- states[states$region == reg & states$date==max(states$date),cols] == states[states$region==reg & states$date==max(states$date)-1,cols]
         if(all(test, na.rm=TRUE)){

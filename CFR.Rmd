@@ -28,7 +28,7 @@ reg <- "Lombardia"
   x$new.positive <- c(NA, diff(x$positive))
   x$cum.death <- stats::filter(x$new.death, rep(1, 7), sides=1)
   x$cum.positive <- stats::filter(x$new.positive, rep(1, 7), sides=1)
-  for(lag in 0:10){
+  for(lag in 0:15){
     tmp <- data.frame(date=x$date[(1+lag):nrow(x)],
                       x=x$death[(1+lag):nrow(x)],
                       val= x$death[(1+lag):nrow(x)]/x$positive[1:(nrow(x)-lag)],
@@ -49,7 +49,7 @@ So that suggests that the CFR in Lombardia was about 20% (the level of the lag 5
 
 ```{r}
 reg <- "Lombardia"
-p <- ggplot(subset(datL, region==reg & lag%in%c(0,3,5,7,10) & date < as.Date("2020-06-01")), aes(x=x,y=log.val,color=lag)) + geom_line() + geom_point() +
+p <- ggplot(subset(datL, region==reg & lag%in%c(0,3,5,7,10,15) & date < as.Date("2020-06-01")), aes(x=x,y=log.val,color=lag)) + geom_line() + geom_point() +
   ggtitle(paste(reg, "cumulative CFR")) +
   xlab("Cumulative Deaths") +
   scale_y_continuous(name="lagged CFR", breaks=-4:0, 
@@ -60,7 +60,7 @@ p
 This next plot shows how the CFR has changed week to week. Here a week of deaths is compared to a week of positives 7 days prior. Here we see that the 7-day lag CFR had and was steadily decreasing even while the hospitals became overwhelmed. Doctors (presumably) got better at treating CoVid-19. I say "presumably" since it is known that treatment did improve (less reliance on ventilators and more on high levels of oxygen) and there is no evidence (reported in the scientific literature) that the virus has evolved to be less lethal.  We also see that since sometime in August 2020 the CFR has stabilized around 1-2% of reported positives.
 ```{r}
 reg <- "Lombardia"
-p <- ggplot(subset(datL, region==reg & lag%in%c(7)), aes(x=date,y=log.cum.val, color=lag)) + geom_line() + geom_point() +
+p <- ggplot(subset(datL, region==reg & lag%in%c(7,15)), aes(x=date,y=log.cum.val, color=lag)) + geom_line()  +
   ggtitle(paste(reg, "7-day CFR")) +
   xlab("Cumulative Deaths") +
   scale_y_continuous(name="lagged CFR", breaks=-6:0, 
@@ -82,7 +82,7 @@ x<-subset(world, region==reg)
   x$new.positive <- c(NA, diff(x$positive))
   x$cum.death <- stats::filter(x$new.death, rep(1, 7), sides=1)
   x$cum.positive <- stats::filter(x$new.positive, rep(1, 7), sides=1)
-  for(lag in 0:10){
+  for(lag in 0:15){
     tmp <- data.frame(date=x$date[(1+lag):nrow(x)],
                       x=x$death[(1+lag):nrow(x)],
                       val= x$death[(1+lag):nrow(x)]/x$positive[1:(nrow(x)-lag)],
@@ -100,7 +100,7 @@ dat$log.cum.val <- log(dat$cum.val)
 ```
 
 ```{r}
-plotfun <- function(dat, reg, ylims, lags=c(0,3,5,7,10), xlims=c(100,5000)){
+plotfun <- function(dat, reg, ylims, lags=c(0,3,5,7,10,15), xlims=c(100,5000)){
   dat <- subset(dat, date <= as.Date("2020-06-01"))
   val1 <- subset(dat, region==reg & lag==5)$val
 val1 <- 100*round(mean(val1[(length(val1)-3):length(val1)]),digits=3)
@@ -114,7 +114,7 @@ p <- ggplot(subset(dat, region==reg & lag%in%lags), aes(x=x,y=log.val,color=lag)
 p
 }
 plotcumfun <- function(dat, reg, ylims, lags=7){
-p <- ggplot(subset(dat, region==reg & lag%in%lags), aes(x=date,y=log.cum.val,color=lag)) + geom_point() +
+p <- ggplot(subset(dat, region==reg & lag%in%lags), aes(x=date,y=log.cum.val,color=lag)) + geom_line() +
   ggtitle(reg) +
   xlab("") +
   scale_y_continuous(name="lagged CFR", breaks=ylims[1]:ylims[2], 
@@ -129,7 +129,7 @@ In Italy, the flat line is 3- to 5-day lag, which would suggest that people were
 reg <- "Italy"
 p1 <- plotfun(dat, reg, c(-4,0))
 reg <- "Italy"
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=5)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 France shows the 7-dag lag being the flat line and CFR dropping a bit lower than in Lombardia. It's been below 1% in late summer and lately has been 1%. Lombardia is older and this may reflect that in France it is the positives are younger on average.
@@ -137,7 +137,7 @@ France shows the 7-dag lag being the flat line and CFR dropping a bit lower than
 ```{r}
 reg <- "France"
 p1 <- plotfun(dat, reg, c(-4,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=5)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 Belgium.
@@ -145,7 +145,7 @@ Belgium.
 ```{r}
 reg <- "Belgium"
 p1 <- plotfun(dat, reg, c(-4,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 
@@ -155,7 +155,7 @@ Spain is an interesting case with a big drop in the CFR in June. In October as c
 ```{r}
 reg <- "Spain"
 p1 <- plotfun(dat, reg, c(-4,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=5)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 United Kingdom, same pattern. CFR dropped steadily through late summer and is now steady at near 1%.
@@ -163,7 +163,7 @@ United Kingdom, same pattern. CFR dropped steadily through late summer and is no
 ```{r}
 reg <- "United Kingdom"
 p1 <- plotfun(dat, reg, c(-4,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 Germany, and actually all of Central Europe, is an exception in that a 10- or longer lag is the flatline. This suggests either some difference in the age of positives or a difference in how deaths are reported, i.e. perhaps there is more of a lag in reporting. The 7- versus 10-day lag does not make a huge difference in the reported weekly CFR (right panel). Like the rest of western Europe, the CFR for the fall wave is about 1%.
@@ -171,7 +171,7 @@ Germany, and actually all of Central Europe, is an exception in that a 10- or lo
 ```{r}
 reg <- "Germany"
 p1 <- plotfun(dat, reg, c(-6,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(10,7))
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 The Czech Republic and Poland are cases where the country avoided the spring waves but are now experiencing the highest per capita infection rates in Europe. Mortality was also quite low for their small spring waves. The fall CFR for the Czech Republic is currently similar to the rest of Europe at about 1.5% while that in Poland is above 2%. I used a 7-day lag though a 10-day lag looks a bit better. With a 10-day lag, the CFR is a little higher; closer to 2% for the Czech Republic and 3% for Poland.
@@ -179,7 +179,7 @@ The Czech Republic and Poland are cases where the country avoided the spring wav
 ```{r}
 reg <- "Czechia"
 p1 <- plotfun(dat, reg, c(-6,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 
@@ -187,7 +187,7 @@ gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```{r}
 reg <- "Poland"
 p1 <- plotfun(dat, reg, c(-6,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 
@@ -203,7 +203,7 @@ The flattening lags for the US is about the same, 5 to 7 days prior. But look at
 ```{r}
 reg <- "US"
 p1 <- plotfun(dat, reg, c(-6,0))
-p1b <- plotcumfun(dat, reg, c(-6,-1), lags=7)
+p1b <- plotcumfun(dat, reg, c(-6,-1), lags=c(7,15))
 gridExtra::grid.arrange(p1,p1b, nrow=1)
 ```
 
@@ -211,7 +211,7 @@ The US numbers are the sum across very diverse states, each of which is handling
 
 ```{r}
 datS <- c()
-for(reg in c("OK","NV","NY","NJ","WA","CA","LA","MI","ND","FL","GA","TX","WI","AL","MT","AZ","TN","AL","MA","MD","IL","KS","IA")){
+for(reg in c("OK","NV","NY","NJ","WA","CA","LA","MI","ND","FL","GA","TX","WI","AL","MT","AZ","TN","AL","MA","MD","IL","KS","IA","SD","UT","ID")){
 x<-subset(states, region==reg)
   x$new.death <- c(NA, diff(x$death))
   x$new.positive <- c(NA, diff(x$positive))
@@ -236,14 +236,45 @@ datS$log.cum.val <- log(datS$cum.val)
 
 
 ```{r}
-lag <- 7
+lag <- c(7,15)
 pl <- list()
-for (reg in c("NY", "FL", "AL", "AZ", "MI", "WI", "ND", "CA","WA"))
+for (reg in c("NY", "FL", "IA", "AZ", "MI", "WI", "ND", "CA","WA"))
   pl[[reg]] <-plotcumfun(datS, reg, c(-6,0), lags=lag)+ theme(legend.position = "none")
 gridExtra::grid.arrange(grobs=pl, ncol=3)
 ```
+## Comparision across hotspot and non-hotspot states
 
+The 7-day and 15-day lag CFR does not seem higher in states with very high cases per million and where there are reports of full ICUs.
 
+States where ICUs are full are almost full.
 
+```{r}
+lag <- c(7,15)
+pl <- list()
+for (reg in c("IA", "ND", "SD", "ID"))
+  pl[[reg]] <-plotcumfun(datS, reg, c(-6,0), lags=lag) + geom_hline(yintercept = log(0.02))+ theme(legend.position = "none")
+gridExtra::grid.arrange(grobs=pl, ncol=2)
+```
 
+States with plenty of capacity.
 
+```{r}
+lag <- c(7,15)
+pl <- list()
+for (reg in c("CA", "WA", "TX", "NY"))
+  pl[[reg]] <-plotcumfun(datS, reg, c(-6,0), lags=lag) + geom_hline(yintercept = log(0.02)) + theme(legend.position = "none")
+
+gridExtra::grid.arrange(grobs=pl, ncol=2)
+```
+
+ FL and AZ are interesting cases. The summer case peak was in early- to mid-July and CFR steadily increased after that for a month and a half.
+ 
+```{r}
+lag <- c(7,15)
+pl <- list()
+for (reg in c("FL", "AZ"))
+  pl[[reg]] <-plotcumfun(datS, reg, c(-6,0), lags=lag) + geom_hline(yintercept = log(0.02)) + theme(legend.position = "none") + xlim(c(as.Date("2020-05-01"), Sys.Date()))
+
+gridExtra::grid.arrange(grobs=pl, ncol=2)
+```
+ 

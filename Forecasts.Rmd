@@ -439,7 +439,7 @@ for(i in c("Japan", "India", "Pakistan")){
 ## North America
 
 ```{r NAmer-forecast1}
-for(i in c("US", "Canada", "Ontario Canada", "Quebec Canada")){
+for(i in c("US", "Canada", "Ontario Canada", "Quebec Canada", "British Columbia Canada", "Manitoba Canada")){
   worldplot(i)
 }
 ```
@@ -463,7 +463,7 @@ for(i in c("Brazil", "Chile", "Argentina")){
 
 
 ```{r stateplotfun}
-stateplot <- function(reg, posmin=100, maxh=150, fitit=FALSE, data="states", ylims=c(0,1000)){
+stateplot <- function(reg, posmin=100, maxh=150, fitit=FALSE, data="states", ylims=c(0,1500)){
 #regfull <- state.name[match(reg, state.abb)]
 if(data=="states"){
   popmill <- round(sum(popdata$population[match(reg, popdata$name)], na.rm=TRUE)/1e6, digits=2)

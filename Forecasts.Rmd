@@ -214,11 +214,14 @@ myfun <- function(data, reg, regname="", posmin=100, maxh=200, mindate="2020-02-
     cfr.sep <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
     b2 <- subset(b, months(b$date) == "October")
     cfr.oct <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
+    b2 <- subset(b, months(b$date) == "November")
+    cfr.nov <- sum(b2$new.deaths[7:nrow(b2)],na.rm=TRUE)/sum(b2$new.cases[1:(nrow(b2)-7)], na.rm=TRUE)
     p <- ggplot(b, aes(x = date, y = new.cases.smooth)) + geom_point() +
       ggtitle(paste0(regname, "\n", "CFR Apr = ",
-                    round(100*cfr.apr,digits=2), "  CFR Sep = ",
-                    round(100*cfr.sep,digits=2), "  CFR Oct = ",
-                    round(100*cfr.oct,digits=2))) +
+                    round(100*cfr.apr,digits=2), "  Sep = ",
+                    round(100*cfr.sep,digits=2), "  Oct = ",
+                    round(100*cfr.oct,digits=2), "  Nov = ",
+                    round(100*cfr.nov,digits=2))) +
       scale_x_date(limits = c(mindate, maxdate), date_breaks="1 month", 
                    date_labels="%b")
     #y=bm
@@ -578,7 +581,7 @@ popmill <- sum(statepop$POPESTIMATE2019[match(c("Washington", "Oregon"), statepo
 popmill <- round(popmill/1e6, digits=2)
 if(inherits(p, "list")){
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
-  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+  p$p <- p$p+ scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=popmill*c(0,1500))
 plot(p$p)
 }
 ```
@@ -598,7 +601,7 @@ reg <- c("San Diego California US",
 p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
 if(inherits(p, "list")){
 popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
-    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=popmill*c(0,1500))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   plot(p$p)
 }
@@ -708,7 +711,7 @@ reg <- c("San Diego California US",
 p <- myfun(world, reg, regname="Southern CA", posmin=10, maxh=150)
 if(inherits(p, "list")){
   popmill <- round(0.6*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
-    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=popmill*c(0,1500))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   plot(p$p)
 }
@@ -723,7 +726,7 @@ ncacounties <- cacounties[!cacounties %in% reg &
 p <- myfun(world, ncacounties, regname="Northern CA", posmin=100, maxh=150)
 if(inherits(p, "list")){
   popmill <- round(0.4*statepop$POPESTIMATE2019[match(c("California"), statepop$NAME)]/1e6, digits=2)
-    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"))
+    p$p <- p$p + scale_y_continuous(sec.axis = sec_axis(~ ./popmill, name="new cases/million"), limits=popmill*c(0,1500))
   p$p <- p$p+annotate("text", x=as.Date("2020-09-01"), y=Inf, label=paste("population =", popmill, "million"), hjust=1, vjust=2)
   plot(p$p)
 }
